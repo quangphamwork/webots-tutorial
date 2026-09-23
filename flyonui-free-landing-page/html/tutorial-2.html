@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chỉnh Sửa Môi Trường Cùng Webots</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Quicksand:wght@600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --steam-pink: #e81e62;
+            --steam-orange: #ff9800;
+            --steam-teal: #00bcd4;
+            --steam-green: #4caf50;
+            --steam-purple: #673ab7;
+            --steam-blue: #283593;
+            
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --border-light: #e2e8f0;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            background-color: var(--bg-body);
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Quicksand', sans-serif;
+            color: var(--steam-blue);
+        }
+
+        /* ----- HIỆU ỨNG EMOJI LƠ LỬNG ----- */
+        .floating-emojis {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .emoji {
+            position: absolute;
+            font-size: 1.8rem;
+            opacity: 0.15;
+            animation: floatUp linear infinite;
+            bottom: -50px;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-110vh) rotate(360deg) scale(1.2); opacity: 0; }
+        }
+
+        .e1 { left: 10%; animation-duration: 15s; animation-delay: 0s; }
+        .e2 { left: 85%; animation-duration: 18s; animation-delay: 2s; font-size: 1.4rem; }
+        .e3 { left: 25%; animation-duration: 22s; animation-delay: 5s; font-size: 2rem; }
+        .e4 { left: 70%; animation-duration: 16s; animation-delay: 1s; }
+        .e5 { left: 50%; animation-duration: 25s; animation-delay: 4s; font-size: 1.5rem; }
+        .e6 { left: 40%; animation-duration: 19s; animation-delay: 7s; }
+        .e7 { left: 90%; animation-duration: 21s; animation-delay: 9s; font-size: 2.2rem; }
+
+        /* ----- GLASSMORPHISM HEADER ----- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-light);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo-area img { height: 45px; width: auto; object-fit: contain; transition: transform 0.3s ease; }
+        .logo-area img:hover { transform: scale(1.05); }
+
+        .nav-links { display: flex; gap: 35px; height: 100%; }
+        .nav-links a {
+            text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.95rem;
+            display: flex; align-items: center; height: 100%; position: relative; transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--steam-blue); }
+        .nav-links a::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0%; height: 3px;
+            background: linear-gradient(90deg, var(--steam-teal), var(--steam-blue));
+            transition: width 0.3s ease; border-radius: 3px 3px 0 0;
+        }
+        .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+        .nav-links a.active { color: var(--steam-blue); }
+
+        .user-email {
+            color: var(--text-muted); font-size: 0.9rem; font-weight: 500;
+            background: #f1f5f9; padding: 8px 16px; border-radius: 20px;
+        }
+
+        /* ----- MAIN CONTAINER & CARDS ----- */
+        main { max-width: 850px; margin: 40px auto; padding: 0 20px; }
+
+        .hero-title {
+            text-align: center; font-size: 2.5rem; margin-bottom: 30px;
+            background: linear-gradient(90deg, var(--steam-teal), var(--steam-blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background-color: var(--bg-card); border-radius: 16px; padding: 30px; margin-bottom: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            border: 1px solid var(--border-light); transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+
+        /* ----- HIỆU ỨNG SCROLL REVEAL ----- */
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* Iframe Slide Container Style */
+        .slide-container {
+            width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden;
+            margin-bottom: 30px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-light); background-color: #f1f5f9;
+        }
+        .slide-container iframe { width: 100%; height: 100%; border: none; display: block; }
+
+        /* Callouts */
+        .callout { padding: 16px 20px; border-radius: 12px; margin: 20px 0; display: flex; gap: 15px; font-size: 0.95rem; }
+        .callout-warning { background-color: #fffbeb; border-left: 5px solid var(--steam-orange); color: #b45309; }
+        .callout-tip { background-color: #f5f3ff; border-left: 5px solid var(--steam-purple); color: #5b21b6; }
+        .callout-info { background-color: #eff6ff; border-left: 5px solid var(--steam-teal); color: #1e40af; }
+
+        /* Lists */
+        .step-list { list-style: none; padding: 0; }
+        .step-list > li { position: relative; padding-left: 40px; margin-bottom: 20px; }
+        .step-list > li::before {
+            content: "✓"; position: absolute; left: 0; top: 2px; width: 24px; height: 24px;
+            background: var(--steam-green); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;
+        }
+        .bullet-list { padding-left: 20px; margin-bottom: 20px; }
+        .bullet-list li { margin-bottom: 10px; }
+
+        /* Practice Box */
+        .practice-box {
+            background: linear-gradient(135deg, #eff6ff, #f5f3ff);
+            border: 2px solid var(--steam-teal);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin: 20px 0;
+        }
+        .practice-box .practice-title {
+            font-family: 'Quicksand', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--steam-blue);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ----- HÌNH ẢNH ----- */
+        .content-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);
+            margin: 20px auto 10px auto;
+            display: block;
+            border: 1px solid var(--border-light);
+        }
+        .figure-caption {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 25px;
+            display: block;
+        }
+
+        /* Video Container */
+        .video-container {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-light);
+            background: #000;
+        }
+        .video-container video {
+            width: 100%;
+            display: block;
+        }
+
+        /* Footer */
+        .footer-card {
+            background: linear-gradient(135deg, var(--steam-blue), var(--steam-teal));
+            color: white; text-align: center; border-radius: 16px; padding: 40px 20px; margin-top: 50px;
+        }
+        .footer-card h2 { color: white; margin-top: 0; }
+        .footer-card p { color: #e2e8f0; }
+        .tag { display: inline-block; background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; margin: 5px; }
+
+        /* Prerequisite Banner */
+        .prereq-banner {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            color: #92400e;
+        }
+        .prereq-banner strong { font-weight: 600; }
+
+        /* Node concept table */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .concept-item {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .concept-item .label {
+            font-weight: 600;
+            color: var(--steam-blue);
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+        .concept-item p {
+            margin: 0;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 600px) {
+            .concept-grid { grid-template-columns: 1fr; }
+            header { padding: 0 16px; }
+            .nav-links { gap: 16px; }
+            main { padding: 0 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="floating-emojis">
+        <div class="emoji e1">⚽</div>
+        <div class="emoji e2">🧱</div>
+        <div class="emoji e3">✨</div>
+        <div class="emoji e4">🤖</div>
+        <div class="emoji e5">🌍</div>
+        <div class="emoji e6">💡</div>
+        <div class="emoji e7">🔧</div>
+    </div>
+
+    <header>
+        <div class="logo-area">
+            <img src="../Phan 1/logo_steam.png" alt="STEAM for Vietnam Logo">
+        </div>
+        <nav class="nav-links">
+            <a href="#">Scene</a>
+            <a href="#">Proto</a>
+            <a href="#">Animation</a>
+            <a href="#">Simulation</a>
+            <a href="#" class="active">Tutorial</a>
+        </nav>
+        <div class="user-email">Teacher-Suong2026@gmail.com</div>
+    </header>
+
+    <main>
+        <h1 class="hero-title reveal">Chỉnh Sửa Môi Trường Cùng Webots</h1>
+
+        <div class="prereq-banner reveal">
+            <span style="font-size: 1.4rem;">⚠️</span>
+            <div><strong>Lưu ý:</strong> Hãy hoàn thành <strong>Webots Tutorial 1</strong> trước khi bắt đầu bài học này. Bạn cần có sẵn file <code>my_first_simulation.wbt</code> từ bài trước.</div>
+        </div>
+
+        <div class="card reveal">
+            <h2>🎯 Hoạt động lớp học</h2>
+            <p><strong>Lời giới thiệu:</strong> Chào bạn, mình là Hoàng Huy - thành viên của team Simulation. Đây là tài liệu mình soạn để hỗ trợ các bạn trong việc thành thạo nền tảng Webots. Cảm ơn các bạn đã xem qua, mình hi vọng nhận được những đóng góp chân thành từ người xem!</p>
+            <ul class="step-list">
+                <li>Chỉnh sửa sàn đấu</li>
+                <li>Solid Node (Vật thể rắn)</li>
+                <li>Cơ chế DEF-USE</li>
+            </ul>
+        </div>
+
+        <!-- SECTION I -->
+        <div class="card reveal">
+            <h2>🌍 I. Chỉnh Sửa Sàn Đấu</h2>
+
+            <h3>1. Tạo trình mô phỏng mới</h3>
+            <p>Đầu tiên, chúng ta tạo một mô phỏng mới dựa trên mô phỏng đã tạo ở Bài hướng dẫn 1 (Tutorial 1).</p>
+
+            <div class="practice-box">
+                <div class="practice-title">🛠️ Bài Thực Hành Số 1</div>
+                <p>Đảm bảo rằng tệp thế giới <code>my_first_simulation.wbt</code> đang được mở (hoặc tên đã chọn ở Tutorial 1), đồng thời trình mô phỏng phải đang <strong>tạm dừng (paused)</strong> và ở thời gian ảo là <code>0</code>. Sử dụng menu <code>File / Save World As...</code>, lưu bản mô phỏng này với tên là <strong>obstacles.wbt</strong>.</p>
+            </div>
+
+            <div class="video-container">
+                <video controls>
+                    <source src="Bài Thực Hành Số 2.mp4" type="video/mp4">
+                    Trình duyệt của bạn không hỗ trợ video.
+                </video>
+            </div>
+            <span class="figure-caption">Video: Bài Thực Hành Số 2 - Xóa RectangleArena và thêm Floor mới</span>
+
+            <h3>2. Chỉnh sửa sàn đấu</h3>
+            <p>Như đã học ở bài trước, Node <code>RectangleArena</code> (mô hình mẫu) được định nghĩa một mặt sàn đơn giản được gắn cố định vào môi trường tĩnh, nghĩa là nó không có nút vật lý (Physics), và được bao quanh bởi các bức tường.</p>
+            <p>Ngoài ra, thư viện đối tượng của Webots còn có sẵn các loại sàn được dựng sẵn khác. Bây giờ, chúng ta sẽ thử xóa nút <code>RectangleArena</code> này đi và thêm vào một mặt sàn đơn giản, sau đó chúng ta sẽ tự tay dựng tường bao quanh nó ở phần sau của bài hướng dẫn này.</p>
+
+            <div class="practice-box">
+                <div class="practice-title">🛠️ Bài Thực Hành Số 2</div>
+                <ul class="step-list">
+                    <li><strong>Xóa RectangleArena:</strong> Chọn nó bằng cách nhấp chuột trái trực tiếp trong khung nhìn 3D hoặc trong Scene Tree, sau đó nhấn phím <code>Delete</code> trên bàn phím. Lúc này màn hình mô phỏng sẽ trống trơn.</li>
+                    <li><strong>Thêm sàn mới:</strong> Chọn node <code>TexturedBackgroundLight</code> và nhấn vào nút <strong>Add (+)</strong>. Trong hộp thoại vừa mở ra, hãy chọn đường dẫn: <code>PROTO nodes (Webots Projects) / objects / floors / Floor (Solid)</code>.</li>
+                    <li><strong>Điều chỉnh kích thước:</strong> Sàn đấu mới (Floor) đã sẵn sàng với kích thước mặc định là <strong>10m x 10m</strong>. Hãy thử đổi kích thước sang <strong>1m x 1m</strong> thông qua các trường (fields) tương ứng.</li>
+                </ul>
+            </div>
+
+            <div class="callout callout-tip">
+                <div>
+                    <strong>💡 Gợi ý:</strong> Bạn có thể dễ dàng điều chỉnh kích thước, vị trí và bề mặt sàn thông qua các trường tương ứng (fields) trong Scene Tree bên trái.
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION II -->
+        <div class="card reveal">
+            <h2>🧱 II. Solid Node (Vật Thể Rắn)</h2>
+            <p>Phần này giới thiệu về node cơ sở quan trọng nhất trong Webots: <strong>node Solid</strong>. Đây là node nền tảng mà từ đó nhiều loại node khác được kế thừa.</p>
+
+            <h3>1. Khái niệm cơ bản</h3>
+            <p>Một node <strong>Solid</strong> đại diện cho một vật thể rắn, nghĩa là một thực thể mà sự biến dạng của nó có thể được bỏ qua. Khoảng cách giữa hai điểm bất kỳ trên vật thể rắn luôn không đổi theo thời gian, bất kể các lực bên ngoài tác động lên nó.</p>
+
+            <div class="concept-grid">
+                <div class="concept-item">
+                    <div class="label">✅ Là vật thể rắn</div>
+                    <p>Cái bàn, một đốt ngón tay của robot, bánh xe, hộp gỗ.</p>
+                </div>
+                <div class="concept-item">
+                    <div class="label">❌ Không phải vật thể rắn</div>
+                    <p>Dây thừng, lốp xe, miếng bọt biển, cánh tay robot hoàn chỉnh.</p>
+                </div>
+            </div>
+
+            <div class="callout callout-info">
+                <div>
+                    <strong>📌 Lưu ý:</strong> Tuy một hệ thống có khớp nối không phải là một vật thể rắn đơn nhất, nhưng nó có thể được chia nhỏ thành nhiều vật thể rắn khác nhau liên kết với nhau.
+                </div>
+            </div>
+
+            <h3>2. Mô phỏng vật lý trong Webots</h3>
+            <p>Công cụ vật lý (physics engine) của Webots được thiết kế để chỉ mô phỏng các vật thể rắn. Do đó, một bước quan trọng khi thiết kế mô phỏng là phải chia nhỏ các thực thể phức tạp thành các phần vật thể rắn riêng biệt.</p>
+
+            <h3>3. Cấu trúc của một vật thể rắn</h3>
+            <p>Để định nghĩa một vật thể rắn, bạn cần tạo một node <strong>Solid</strong>. Bên trong node này, bạn sẽ thiết lập các node con (sub-nodes) tương ứng:</p>
+            <ul class="bullet-list">
+                <li><strong>Hiển thị đồ họa (Graphical Representation):</strong> Được định nghĩa bởi các node <code>Shape</code> nằm trong danh sách <code>children</code>. Đây là những gì bạn nhìn thấy trong môi trường 3D.</li>
+                <li><strong>Ranh giới va chạm (Collision Bounds):</strong> Được định nghĩa trong trường <code>boundingObject</code>. Đây là hình dạng thực tế mà các vật thể khác sẽ va chạm vào.</li>
+                <li><strong>Tính chất vật lý (Physics):</strong> Trường <code>physics</code> xác định vật thể đó thuộc về môi trường động (có trọng lực, lực quán tính) hay môi trường tĩnh.</li>
+            </ul>
+
+            <div class="callout callout-warning">
+                <div>
+                    <strong>⚠️ Quan trọng:</strong> Tất cả các node con này đều không bắt buộc, nhưng để sử dụng trường <code>physics</code> (vật lý động), bạn bắt buộc phải định nghĩa trường <code>boundingObject</code>.
+                </div>
+            </div>
+
+            <div class="practice-box">
+                <div class="practice-title">🛠️ Bài Thực Hành Số 3 - Tạo quả bóng</div>
+                <ul class="step-list">
+                    <li><strong>Tạo Node Solid:</strong> Tại Scene Tree, chọn node cuối cùng, nhấn <strong>Add (+)</strong> → <code>Base nodes</code> → chọn <code>Solid</code>.</li>
+                    <li><strong>Thiết lập hình dáng (Shape):</strong> Mở rộng Solid, chọn <code>children</code>, nhấn Add → chọn <code>Shape</code>.</li>
+                    <li><strong>Chỉnh diện mạo (Appearance):</strong> Trong Shape, chọn <code>appearance</code>, nhấn Add → chọn <code>PBRAppearance</code>. Sau đó chỉnh <code>metalness = 0</code> và <code>roughness = 1</code>.</li>
+                    <li><strong>Định nghĩa hình khối đồ họa:</strong> Trong Shape, chọn <code>geometry</code>, nhấn Add → chọn <code>Sphere</code> (để hiển thị quả bóng).</li>
+                    <li><strong>Thiết lập vùng va chạm (Collision):</strong> Quay lại node Solid, chọn <code>boundingObject</code>, nhấn Add → chọn <code>Sphere</code>.</li>
+                    <li><strong>Kích hoạt vật lý:</strong> Tại node Solid, chọn trường <code>physics</code>, nhấn Add → chọn <code>Physics</code>.</li>
+                    <li><strong>Đặt vị trí và Lưu:</strong> Chỉnh trường <code>translation</code> thành <code>{0.2, 0, 0.2}</code> để đặt bóng trước robot, sau đó nhấn <strong>Save</strong>.</li>
+                </ul>
+                <div class="callout callout-tip" style="margin-top: 12px;">
+                    <div>
+                        <strong>💡 Nhớ:</strong> Tương tự như bài 1, bạn có thể tác dụng lực lên vật thể rắn bằng tổ hợp phím <code>Alt + chuột trái + kéo</code>. Khi lỡ "quăng" trái bóng, đưa về vị trí cũ bằng cách nhập lại <code>translation = {0.2, 0, 0.2}</code>.
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-container">
+                <video controls>
+                    <source src="Phần 1_Bài Thực Hành số 3 (bước 1,2,3).mp4" type="video/mp4">
+                    Trình duyệt của bạn không hỗ trợ video.
+                </video>
+            </div>
+            <span class="figure-caption">Video: Bài Thực Hành Số 3 (Phần 1) - Bước 1, 2, 3</span>
+
+            <div class="video-container">
+                <video controls>
+                    <source src="Phần 2_Bài Thực Hành số 3 ( bước 4,5,6).mp4" type="video/mp4">
+                    Trình duyệt của bạn không hỗ trợ video.
+                </video>
+            </div>
+            <span class="figure-caption">Video: Bài Thực Hành Số 3 (Phần 2) - Bước 4, 5, 6</span>
+
+            <h3>D. Node Hình Học (Geometries)</h3>
+            <p>Để định nghĩa quả bóng, chúng ta đã sử dụng node <code>Sphere</code> trong hai ngữ cảnh khác nhau: hiển thị đồ họa (<code>children</code>) và định nghĩa ranh giới vật lý (<code>boundingObject</code>).</p>
+            <p>Tất cả các node Geometry (như <code>Sphere</code>, <code>Box</code>, <code>Cylinder</code>...) đều có thể dùng để hiển thị đồ họa. Tuy nhiên, chỉ một số ít trong số chúng có thể được dùng trong ngữ cảnh vật lý (va chạm). Bạn có thể tham khảo sơ đồ biểu đồ các node (nodes chart diagram) để biết node nào được hỗ trợ trong từng ngữ cảnh cụ thể.</p>
+
+            <div class="practice-box">
+                <div class="practice-title">🛠️ Bài Thực Hành Số 4 - Hiệu chỉnh quả bóng</div>
+                <p>Đối với cả hai node Sphere đã tạo (một cái trong <code>children</code> và một cái trong <code>boundingObject</code>), hãy thiết lập các thông số sau:</p>
+                <ul class="step-list">
+                    <li><strong>Trường <code>radius</code> (Bán kính):</strong> Chỉnh thành <code>0.05</code> (tương đương bán kính 5cm).</li>
+                    <li><strong>Trường <code>subdivision</code> (Độ phân giải):</strong> Chỉnh thành <code>2</code>.</li>
+                </ul>
+            </div>
+
+            <div class="video-container">
+                <video controls>
+                    <source src="Phần 1_Bài thực hành số 4.mp4" type="video/mp4">
+                    Trình duyệt của bạn không hỗ trợ video.
+                </video>
+            </div>
+            <span class="figure-caption">Video: Bài Thực Hành Số 4 (Phần 1)</span>
+
+            <div class="video-container">
+                <video controls>
+                    <source src="Phần 2_Bài thực hành số 4 ( chỉnh boundingobject ).mp4" type="video/mp4">
+                    Trình duyệt của bạn không hỗ trợ video.
+                </video>
+            </div>
+            <span class="figure-caption">Video: Bài Thực Hành Số 4 (Phần 2) - Chỉnh boundingObject</span>
+
+            <div class="callout callout-tip">
+                <div>
+                    <strong>💡 Extra:</strong> Sau khi setup thành công 2 thông số, node <code>boundingObject</code> sẽ không còn ôm lấy vật thể nữa. Bạn có thể chỉnh lại thông số trong <code>boundingObject</code> cho chuẩn xác. Tuy nhiên, đối với mô hình lớn, việc chỉnh cùng 1 thông số nhiều lần là phương án thiếu khoa học — hãy tìm hiểu cơ chế DEF-USE ngay bên dưới!
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION III -->
+        <div class="card reveal">
+            <h2>🔗 III. Cơ Chế DEF-USE</h2>
+            <p>Cơ chế <strong>DEF-USE</strong> cho phép bạn định nghĩa (define) một node ở một nơi và tái sử dụng (reuse) định nghĩa đó ở những nơi khác trong cây sơ đồ (scene tree).</p>
+
+            <h3>1. Lợi ích và cách thức hoạt động</h3>
+            <ul class="bullet-list">
+                <li><strong>Tránh trùng lặp:</strong> Giảm bớt việc phải tạo đi tạo lại các node giống hệt nhau trong file world.</li>
+                <li><strong>Chỉnh sửa đồng loạt:</strong> Khi bạn thay đổi thông số ở node gốc (DEF), tất cả các node tái sử dụng (USE) sẽ tự động cập nhật theo.</li>
+            </ul>
+
+            <div class="concept-grid">
+                <div class="concept-item">
+                    <div class="label">1️⃣ DEF (Define)</div>
+                    <p>Một node được dán nhãn bằng một chuỗi ký tự gọi là DEF.<br>Ví dụ: <code>DEF BALL_GEOMETRY Sphere { ... }</code></p>
+                </div>
+                <div class="concept-item">
+                    <div class="label">2️⃣ USE (Use)</div>
+                    <p>Các bản sao của node được gọi lại bằng từ khóa USE.<br>Ví dụ: <code>USE BALL_GEOMETRY</code></p>
+                </div>
+                <div class="concept-item">
+                    <div class="label">3️⃣ Tính kế thừa</div>
+                    <p>Chỉ có các trường (fields) của node DEF là có thể chỉnh sửa. Các node USE thừa hưởng mọi giá trị từ DEF.</p>
+                </div>
+                <div class="concept-item">
+                    <div class="label">4️⃣ Thứ tự ưu tiên</div>
+                    <p>Node DEF phải luôn xuất hiện <strong>trước</strong> node USE trong file world.</p>
+                </div>
+            </div>
+
+            <div class="practice-box">
+                <div class="practice-title">🛠️ Bài Thực Hành Số 5 - Hợp nhất hình khối quả bóng</div>
+                <ul class="step-list">
+                    <li><strong>Đặt tên (DEF):</strong> Chọn node Sphere đầu tiên (node con của Shape) trong Scene Tree. Tại trình chỉnh sửa trường (field editor), nhập chuỗi định danh: <code>BALL_GEOMETRY</code>.</li>
+                    <li><strong>Xóa node thừa:</strong> Chọn trường <code>boundingObject</code> (cái đang chứa node Sphere thứ hai). Nhấp chuột phải và chọn <strong>Delete</strong> từ menu ngữ cảnh để xóa node này đi.</li>
+                    <li><strong>Tái sử dụng (USE):</strong> Chọn lại trường <code>boundingObject</code> đang trống đó, nhấn nút Add. Trong hộp thoại hiện ra, chọn mục <code>USE / BALL_GEOMETRY</code>.</li>
+                    <li><strong>Kiểm tra:</strong> Bây giờ bạn sẽ thấy cấu trúc trong cây sơ đồ gọn gàng hơn, và khi thay đổi bán kính ở node DEF, vùng va chạm cũng tự động thay đổi theo. (Thay đổi <code>translation</code> về <code>{0.2, 0, 0.2}</code> để thấy lại hình cầu).</li>
+                </ul>
+                <div class="callout callout-tip" style="margin-top: 12px;">
+                    <div>
+                        <strong>❓ Tại sao phải làm cách này?</strong> Nhờ vào việc định nghĩa và đặt tên, ta sẽ dễ dàng đưa 2 trường về cùng cấu hình thay vì phải cố gắng setup từng thông số cho giống nhau.
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-container">
+                <video controls>
+                    <source src="Bài Thực Hành Số 5.mp4" type="video/mp4">
+                    Trình duyệt của bạn không hỗ trợ video.
+                </video>
+            </div>
+            <span class="figure-caption">Video: Bài Thực Hành Số 5 - Cơ chế DEF-USE</span>
+
+            <div class="practice-box">
+                <div class="practice-title">🛠️ Bài Thực Hành Số 6 - Tạo quả bóng thứ hai bằng DEF-USE ở cấp độ Shape</div>
+                <ul class="step-list">
+                    <li><strong>Đặt tên (DEF) cho Shape:</strong> Trong Scene Tree của quả bóng thứ nhất, tìm đến node <code>Shape</code>. Tại trình chỉnh sửa trường, nhập tên DEF là <code>BALL_SHAPE</code>.</li>
+                    <li><strong>Tạo Solid mới:</strong> Chọn node cuối cùng trong Scene Tree, nhấn Add → <code>Base nodes</code> → chọn <code>Solid</code> (đây sẽ là quả bóng thứ hai).</li>
+                    <li><strong>Sử dụng (USE) Shape:</strong> Mở rộng node Solid mới, chọn trường <code>children</code>, nhấn Add → chọn <code>USE / BALL_SHAPE</code>.</li>
+                    <li><strong>Thiết lập va chạm:</strong> Tại node Solid mới, chọn trường <code>boundingObject</code>, nhấn Add → chọn <code>USE / BALL_SHAPE</code>.</li>
+                    <li><strong>Thêm vật lý:</strong> Chọn trường <code>physics</code> của node Solid mới và nhấn Add → chọn <code>Physics</code>.</li>
+                    <li><strong>Định vị:</strong> Chỉnh trường <code>translation</code> của quả bóng thứ hai sang <code>{-0.2, 0, 0.2}</code> để nó không nằm đè lên quả bóng cũ hoặc robot.</li>
+                </ul>
+            </div>
+
+            <div class="video-container">
+                <video controls>
+                    <source src="Bài Thực Hành Số 6.mp4" type="video/mp4">
+                    Trình duyệt của bạn không hỗ trợ video.
+                </video>
+            </div>
+            <span class="figure-caption">Video: Bài Thực Hành Số 6 - Tạo quả bóng thứ hai</span>
+
+            <h3>2. Thêm vào 4 bức tường cho sàn đấu</h3>
+            <p>Để kiểm tra tiến độ của bạn, hãy tự mình triển khai 4 bức tường bao quanh môi trường. Các bức tường này phải được định nghĩa theo kiểu <strong>Tĩnh (Static)</strong>.</p>
+
+            <div class="concept-grid">
+                <div class="concept-item">
+                    <div class="label">🧊 Tĩnh (Static)</div>
+                    <p>Trường <code>physics</code> để trống (NULL) → vật thể đứng yên giữa không trung bất kể trọng lực. Dùng cho tường, sàn nhà.</p>
+                </div>
+                <div class="concept-item">
+                    <div class="label">⚡ Động (Dynamic)</div>
+                    <p>Trường <code>physics</code> chứa node Physics → vật thể rơi do trọng lực. Dùng cho robot, vật thể có thể bị xô đổ.</p>
+                </div>
+            </div>
+
+            <div class="callout callout-warning">
+                <div>
+                    <strong>📋 Yêu cầu thực hiện:</strong>
+                    <ul style="margin: 8px 0 0 0; padding-left: 18px;">
+                        <li>Sử dụng cơ chế DEF-USE ở cấp độ <strong>Shape</strong> (thay vì cấp độ Geometry) để tối ưu hóa.</li>
+                        <li>Dùng node <code>Box</code> làm hình khối chuẩn để dựng tường.</li>
+                        <li>Chỉ định nghĩa <strong>1 Shape duy nhất</strong> cho tất cả các bức tường (sử dụng lại 3 lần bằng lệnh USE).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer-card reveal">
+            <h2>🎉 TỔNG KẾT & CHÚC MỪNG BẠN!</h2>
+            <ul style="text-align: left; max-width: 600px; margin: 0 auto 20px auto; line-height: 1.8;">
+                <li>Biết cách thay thế sàn đấu mặc định bằng sàn tùy chỉnh.</li>
+                <li>Hiểu cấu trúc cơ bản của node <strong>Solid</strong> (children, boundingObject, physics).</li>
+                <li>Biết sự khác biệt giữa vật thể <strong>Tĩnh</strong> và <strong>Động</strong>.</li>
+                <li>Thành thạo cơ chế <strong>DEF-USE</strong> để tái sử dụng và chỉnh sửa node đồng loạt.</li>
+            </ul>
+            <div style="margin-top: 30px;">
+                <span class="tag">Team Simulation - Robotics</span>
+                <span class="tag">Liên hệ hỗ trợ: Phạm Hoàng Huy</span>
+                <span class="tag">Email: hoanghuy.pham@steamforvietnam.org</span>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Hiệu ứng cuộn (Scroll Reveal)
+        document.addEventListener("DOMContentLoaded", function() {
+            const reveals = document.querySelectorAll(".reveal");
+            const revealOptions = { threshold: 0.1, rootMargin: "0px 0px -50px 0px" };
+            
+            const revealOnScroll = new IntersectionObserver(function(entries, observer) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("active");
+                    }
+                });
+            }, revealOptions);
+
+            reveals.forEach(reveal => revealOnScroll.observe(reveal));
+        });
+    </script>
+</body>
+</html>

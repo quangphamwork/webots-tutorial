@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lập Trình Robot Controller Cùng Webots</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Quicksand:wght@600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --steam-pink:   #e81e62;
+            --steam-orange: #ff9800;
+            --steam-teal:   #00bcd4;
+            --steam-green:  #4caf50;
+            --steam-purple: #673ab7;
+            --steam-blue:   #283593;
+            --steam-violet: #9c27b0;
+
+            --text-main:   #334155;
+            --text-muted:  #64748b;
+            --bg-body:     #f8fafc;
+            --bg-card:     #ffffff;
+            --border-light:#e2e8f0;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            background-color: var(--bg-body);
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 { font-family: 'Quicksand', sans-serif; color: var(--steam-blue); }
+
+        /* FLOATING EMOJIS */
+        .floating-emojis { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:-1; overflow:hidden; }
+        .emoji { position:absolute; font-size:1.8rem; opacity:0.15; animation:floatUp linear infinite; bottom:-50px; }
+        @keyframes floatUp {
+            0%   { transform:translateY(0) rotate(0deg) scale(0.8); opacity:0; }
+            10%  { opacity:0.3; }
+            90%  { opacity:0.3; }
+            100% { transform:translateY(-110vh) rotate(360deg) scale(1.2); opacity:0; }
+        }
+        .e1{left:8%;  animation-duration:15s; animation-delay:0s;}
+        .e2{left:83%; animation-duration:18s; animation-delay:2s;  font-size:1.4rem;}
+        .e3{left:28%; animation-duration:22s; animation-delay:5s;  font-size:2rem;}
+        .e4{left:67%; animation-duration:16s; animation-delay:1s;}
+        .e5{left:50%; animation-duration:25s; animation-delay:4s;  font-size:1.5rem;}
+        .e6{left:42%; animation-duration:19s; animation-delay:7s;}
+        .e7{left:91%; animation-duration:21s; animation-delay:9s;  font-size:2.2rem;}
+
+        /* HEADER */
+        header {
+            position:sticky; top:0; z-index:1000;
+            display:flex; align-items:center; justify-content:space-between;
+            padding:0 40px; height:70px;
+            background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);
+            border-bottom:1px solid var(--border-light);
+            box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .logo-area img { height:45px; width:auto; object-fit:contain; transition:transform 0.3s ease; }
+        .logo-area img:hover { transform:scale(1.05); }
+        .nav-links { display:flex; gap:35px; height:100%; }
+        .nav-links a {
+            text-decoration:none; color:var(--text-muted); font-weight:600; font-size:0.95rem;
+            display:flex; align-items:center; height:100%; position:relative; transition:color 0.3s;
+        }
+        .nav-links a:hover { color:var(--steam-blue); }
+        .nav-links a::after {
+            content:''; position:absolute; bottom:0; left:0; width:0%; height:3px;
+            background:linear-gradient(90deg, var(--steam-violet), var(--steam-pink));
+            transition:width 0.3s ease; border-radius:3px 3px 0 0;
+        }
+        .nav-links a:hover::after, .nav-links a.active::after { width:100%; }
+        .nav-links a.active { color:var(--steam-blue); }
+        .user-email {
+            color:var(--text-muted); font-size:0.9rem; font-weight:500;
+            background:#f1f5f9; padding:8px 16px; border-radius:20px;
+        }
+
+        /* MAIN */
+        main { max-width:850px; margin:40px auto; padding:0 20px; }
+
+        .hero-title {
+            text-align:center; font-size:2.5rem; margin-bottom:30px;
+            background:linear-gradient(90deg, var(--steam-violet), var(--steam-pink), var(--steam-orange));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        }
+
+        /* CARDS */
+        .card {
+            background-color:var(--bg-card); border-radius:16px; padding:30px; margin-bottom:30px;
+            box-shadow:0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025);
+            border:1px solid var(--border-light); transition:transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { transform:translateY(-3px); box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); }
+
+        /* SCROLL REVEAL */
+        .reveal { opacity:0; transform:translateY(40px); transition:all 0.8s ease-out; }
+        .reveal.active { opacity:1; transform:translateY(0); }
+
+        /* CALLOUTS */
+        .callout { padding:16px 20px; border-radius:12px; margin:20px 0; display:flex; gap:15px; font-size:0.95rem; }
+        .callout-warning  { background-color:#fffbeb; border-left:5px solid var(--steam-orange); color:#b45309; }
+        .callout-tip      { background-color:#f5f3ff; border-left:5px solid var(--steam-purple); color:#5b21b6; }
+        .callout-info     { background-color:#eff6ff; border-left:5px solid var(--steam-teal);   color:#1e40af; }
+        .callout-error    { background-color:#fef2f2; border-left:5px solid #ef4444;             color:#991b1b; }
+        .callout-success  { background-color:#f0fdf4; border-left:5px solid var(--steam-green);  color:#166534; }
+
+        /* PRACTICE BOX */
+        .practice-box {
+            background:linear-gradient(135deg, #fdf4ff, #f5f3ff);
+            border:2px solid var(--steam-violet);
+            border-radius:12px; padding:20px 24px; margin:20px 0;
+        }
+        .practice-box .practice-title {
+            font-family:'Quicksand', sans-serif; font-size:1.05rem; font-weight:700;
+            color:var(--steam-violet); margin-bottom:12px;
+            display:flex; align-items:center; gap:8px;
+        }
+
+        /* LISTS */
+        .step-list { list-style:none; padding:0; }
+        .step-list > li { position:relative; padding-left:40px; margin-bottom:20px; }
+        .step-list > li::before {
+            content:"\2713"; position:absolute; left:0; top:2px; width:24px; height:24px;
+            background:var(--steam-green); color:white; border-radius:50%;
+            display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;
+        }
+        .bullet-list { padding-left:20px; margin-bottom:20px; }
+        .bullet-list li { margin-bottom:10px; }
+
+        /* IMAGES */
+        .content-img {
+            max-width:100%; height:auto; border-radius:8px;
+            box-shadow:0 4px 6px -1px rgba(0,0,0,0.15);
+            margin:20px auto 10px auto; display:block;
+            border:1px solid var(--border-light);
+        }
+        .figure-caption {
+            text-align:center; font-size:0.85rem; color:var(--text-muted);
+            font-style:italic; margin-bottom:25px; display:block;
+        }
+
+        /* VIDEO */
+        .video-container {
+            width:100%; border-radius:12px; overflow:hidden;
+            margin:20px 0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);
+            border:1px solid var(--border-light); background:#000;
+        }
+        .video-container video { width:100%; display:block; }
+
+        /* CONCEPT GRID */
+        .concept-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0; }
+        .concept-item { background:#f8fafc; border:1px solid var(--border-light); border-radius:10px; padding:16px; }
+        .concept-item .label { font-weight:600; color:var(--steam-blue); font-size:0.9rem; margin-bottom:6px; }
+        .concept-item p { margin:0; font-size:0.88rem; color:var(--text-muted); }
+
+        /* OUTCOME GRID */
+        .outcome-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:20px 0; }
+        .outcome-card {
+            border-radius:12px; padding:18px; text-align:center;
+            border:1px solid var(--border-light);
+        }
+        .outcome-card .icon { font-size:2rem; margin-bottom:8px; }
+        .outcome-card h4 { margin:0 0 6px 0; font-size:0.95rem; }
+        .outcome-card p { margin:0; font-size:0.82rem; color:var(--text-muted); }
+        .outcome-card.card-1 { background:#eff6ff; }
+        .outcome-card.card-2 { background:#fdf4ff; }
+        .outcome-card.card-3 { background:#f0fdf4; }
+
+        /* FEEDBACK LOOP */
+        .loop-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin:20px 0; }
+        .loop-item {
+            border-radius:10px; border:1px solid var(--border-light);
+            padding:14px; background:#f8fafc; text-align:center;
+        }
+        .loop-item .step-num {
+            width:32px; height:32px; border-radius:50%; margin:0 auto 8px auto;
+            display:flex; align-items:center; justify-content:center;
+            font-weight:700; color:white; font-size:0.85rem;
+        }
+        .loop-item .prop { font-family:'Fira Code', monospace; font-size:0.8rem; color:var(--steam-purple); }
+        .loop-item .desc { font-size:0.82rem; color:var(--text-muted); margin-top:4px; }
+
+        /* PREREQ BANNER */
+        .prereq-banner {
+            background:linear-gradient(135deg,#fef3c7,#fde68a);
+            border:1px solid #f59e0b; border-radius:12px;
+            padding:16px 20px; margin-bottom:30px;
+            display:flex; align-items:center; gap:12px;
+            font-size:0.95rem; color:#92400e;
+        }
+
+        /* ── LANGUAGE TAB SWITCHER ── */
+        .lang-tabs {
+            display:flex; gap:0; margin-bottom:0; border-radius:8px 8px 0 0; overflow:hidden;
+            background:#0f172a; border:1px solid #334155; border-bottom:none;
+        }
+        .lang-tab {
+            padding:8px 18px; font-size:0.82rem; font-weight:600; font-family:'Inter',sans-serif;
+            cursor:pointer; border:none; background:#0f172a; color:#94a3b8;
+            transition: background 0.2s, color 0.2s; border-right:1px solid #334155;
+        }
+        .lang-tab:last-child { border-right:none; }
+        .lang-tab:hover { background:#1e293b; color:#e2e8f0; }
+        .lang-tab.active { background:#283593; color:#fff; }
+        .lang-panel { display:none; }
+        .lang-panel.active { display:block; }
+
+        /* CODE WINDOW */
+        .code-window {
+            background-color:#1e293b; border-radius:12px; overflow:hidden; margin:20px 0;
+            box-shadow:0 10px 15px -3px rgba(0,0,0,0.2); border:1px solid #334155;
+        }
+        .code-window.tabbed { border-radius:0 0 12px 12px; margin-top:0; border-top:none; }
+        .code-header {
+            background-color:#0f172a; padding:10px 15px;
+            display:flex; align-items:center; justify-content:space-between;
+            border-bottom:1px solid #334155;
+        }
+        .mac-dots { display:flex; gap:8px; }
+        .dot { width:12px; height:12px; border-radius:50%; }
+        .dot.red    { background-color:#ff5f56; }
+        .dot.yellow { background-color:#ffbd2e; }
+        .dot.green  { background-color:#27c93f; }
+        .code-title { color:#94a3b8; font-size:0.85rem; font-family:'Inter',sans-serif; font-weight:500; }
+        .copy-btn {
+            background:rgba(255,255,255,0.1); border:none; color:#cbd5e1;
+            padding:4px 10px; border-radius:6px; font-size:0.8rem;
+            cursor:pointer; transition:background 0.2s, color 0.2s;
+            display:flex; align-items:center; gap:5px; font-family:'Inter',sans-serif;
+        }
+        .copy-btn:hover { background:rgba(255,255,255,0.2); color:#fff; }
+        .copy-btn.copied { background:var(--steam-green); color:white; }
+        .code-window pre {
+            margin:0; padding:20px; overflow-x:auto; background:transparent;
+            font-family:'Fira Code', monospace; font-size:0.85rem; line-height:1.6; color:#f8fafc;
+        }
+        .kw  { color:#c678dd; }
+        .str { color:#98c379; }
+        .num { color:#d19a66; }
+        .cmt { color:#7f848e; font-style:italic; }
+        .key { color:#61afef; }
+        .fn  { color:#61afef; }
+        .inc { color:#e06c75; }
+        .type { color:#e5c07b; }
+
+        /* FOOTER */
+        .footer-card {
+            background:linear-gradient(135deg, var(--steam-violet), var(--steam-pink));
+            color:white; text-align:center; border-radius:16px; padding:40px 20px; margin-top:50px;
+        }
+        .footer-card h2 { color:white; margin-top:0; }
+        .footer-card p  { color:#e2e8f0; }
+        .tag { display:inline-block; background:rgba(255,255,255,0.2); padding:5px 15px; border-radius:20px; font-size:0.85rem; margin:5px; }
+
+        /* PATH BOX */
+        .path-box {
+            background:#0f172a; color:#98c379;
+            font-family:'Fira Code', monospace; font-size:0.85rem;
+            padding:12px 16px; border-radius:8px; margin:12px 0;
+            border:1px solid #334155;
+        }
+
+        /* SENSOR DIAGRAM */
+        .sensor-info {
+            display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0;
+        }
+        .sensor-value {
+            border-radius:10px; padding:16px; text-align:center;
+        }
+        .sensor-value.high { background:#fef2f2; border:1px solid #fecaca; }
+        .sensor-value.low { background:#f0fdf4; border:1px solid #bbf7d0; }
+        .sensor-value .val { font-family:'Fira Code', monospace; font-size:1.4rem; font-weight:700; }
+        .sensor-value .val.danger { color:#ef4444; }
+        .sensor-value .val.safe { color:#22c55e; }
+
+        @media(max-width:600px){
+            .concept-grid, .outcome-grid, .loop-grid, .sensor-info { grid-template-columns:1fr; }
+            header { padding:0 16px; }
+            .nav-links { gap:14px; }
+            main { padding:0 12px; }
+            .lang-tab { padding:6px 10px; font-size:0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="floating-emojis">
+    <div class="emoji e1">🤖</div>
+    <div class="emoji e2">💻</div>
+    <div class="emoji e3">⚡</div>
+    <div class="emoji e4">🔧</div>
+    <div class="emoji e5">🎮</div>
+    <div class="emoji e6">📡</div>
+    <div class="emoji e7">🚀</div>
+</div>
+
+<header>
+    <div class="logo-area">
+        <img src="../Phan 1/logo_steam.png" alt="STEAM for Vietnam Logo">
+    </div>
+    <nav class="nav-links">
+        <a href="#">Controller</a>
+        <a href="#">API</a>
+        <a href="#">Sensor</a>
+        <a href="#">Motor</a>
+        <a href="#" class="active">Tutorial</a>
+    </nav>
+    <div class="user-email">Teacher-Suong2026@gmail.com</div>
+</header>
+
+<main>
+    <h1 class="hero-title reveal">Lập Trình Robot Controller Cùng Webots</h1>
+
+    <div class="prereq-banner reveal">
+        <span style="font-size:1.4rem;"></span>
+        <div>
+            <strong>Lưu ý quan trọng:</strong> Đảm bảo bạn đã hoàn thành và nắm chắc cách thiết kế giao diện,
+            cấu trúc các Node hiển thị và kết cấu bề mặt (<strong>Texturing</strong>) ở Webots Tutorial 3
+            trước khi bắt đầu bài học này. Bên cạnh đó, bạn cần nắm kiến thức vững về <strong>lập trình ngôn ngữ C</strong>.
+        </div>
+    </div>
+
+    <!-- HOẠT ĐỘNG LỚP HỌC -->
+    <div class="card reveal">
+        <h2>Hoạt động lớp học</h2>
+        <p>Trong bài này, chúng ta sẽ làm chủ lập trình bộ điều khiển (<strong>Controller</strong>) cho robot
+        trên nền tảng Webots — từ việc hiểu cảm biến đến viết thuật toán né chướng ngại vật hoàn chỉnh.</p>
+        <ul class="step-list">
+            <li>Tìm hiểu mô hình robot e-puck và cơ chế hoạt động của các cảm biến</li>
+            <li>Thiết lập thế giới (World) mới và tạo Bộ điều khiển (Controller) mới</li>
+            <li>Tìm hiểu cấu trúc lập trình điều khiển phản hồi vòng lặp (<code>Feedback Loop</code>)</li>
+            <li>Khởi tạo thiết bị cảm biến Khoảng cách (<code>DistanceSensor</code>) và Động cơ (<code>Motor</code>) qua API</li>
+            <li>Bài tập thực hành: Lập trình robot tự động né chướng ngại vật (Collision Avoidance)</li>
+        </ul>
+
+        <div class="callout callout-info">
+            <div><strong>Nhắc nhở:</strong> Trước khi bắt đầu bài học, hãy tạo world mới dựa trên kết quả
+            bài cũ bằng cách vào menu <code>File → Save World As…</code> với tên <code>collision_avoidance.wbt</code>.</div>
+        </div>
+
+        <div class="video-container">
+            <video controls>
+                <source src="Webots Tutorial 4/Thực hành 1_tạo file.mp4" type="video/mp4">
+                Trình duyệt của bạn không hỗ trợ video.
+            </video>
+        </div>
+        <span class="figure-caption">Video: Tạo file world mới từ kết quả Tutorial 3</span>
+    </div>
+
+    <!-- CHUẨN ĐẦU RA -->
+    <div class="card reveal">
+        <h2>Chuẩn Đầu Ra Của Bài Học</h2>
+        <div class="outcome-grid">
+            <div class="outcome-card card-1">
+                <div class="icon"></div>
+                <h4>Scene Tree & C API</h4>
+                <p>Hiểu rõ mối liên kết mật thiết giữa các Node trên cây Scene Tree và hệ thống thư viện Webots Controller API trong ngôn ngữ C.</p>
+            </div>
+            <div class="outcome-card card-2">
+                <div class="icon"></div>
+                <h4>Cấu Hình Thiết Bị</h4>
+                <p>Biết cách khởi tạo, bật chu kỳ lấy mẫu cho 8 cảm biến khoảng cách (DistanceSensor) và thiết lập vận tốc động cơ bánh xe (Motor).</p>
+            </div>
+            <div class="outcome-card card-3">
+                <div class="icon"></div>
+                <h4>Feedback Loop Hoàn Chỉnh</h4>
+                <p>Lập trình vòng lặp phản hồi khép kín giúp robot tự động đọc cảm biến, xử lý logic chuyển hướng và né tránh chướng ngại vật mượt mà.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTROLLER LÀ GÌ -->
+    <div class="card reveal">
+        <h2>Controller Là Gì?</h2>
+        <div class="concept-grid">
+            <div class="concept-item">
+                <div class="label">Khái Niệm</div>
+                <p>Trong Webots, <strong>Controller</strong> là chương trình được gắn với robot để điều khiển robot trong mô phỏng. Nó nhận thông tin từ các cảm biến, xử lý thông tin và đưa ra lệnh để robot hành động.</p>
+            </div>
+            <div class="concept-item">
+                <div class="label">Câu Hỏi Đặt Ra</div>
+                <p>Đứng trước vật cản, robot phải làm gì? Controller chính là bộ não giúp robot trả lời câu hỏi này — đọc cảm biến, phân tích và ra quyết định.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- API -->
+    <div class="card reveal">
+        <h2>API — Bộ Công Cụ Giao Tiếp Với Webots</h2>
+        <p>API có thể hiểu đơn giản như một <strong>bộ công cụ gồm những hàm được Webots cung cấp sẵn</strong>, giúp chương trình Controller giao tiếp và điều khiển các đối tượng trong mô phỏng.</p>
+        <div class="callout callout-tip">
+            <div>
+                <strong>Ví dụ dễ hiểu:</strong> Mình đang dùng ngôn ngữ C để viết chương trình, nhưng Webots không thể tự hiểu mọi câu lệnh C liên quan đến robot. Vì vậy Webots cung cấp một bộ API — giống như một bộ câu lệnh có sẵn — để nói cho Webots biết: <em>hãy điều khiển motor này chạy với tốc độ này</em>.
+            </div>
+        </div>
+        <div class="callout callout-info">
+            <div>
+                <strong>Ví dụ cụ thể:</strong> Khi sử dụng <code>webots/distance_sensor.h</code>, các bạn có thể sử dụng những hàm <code>wb_distance_sensor_*</code> để lấy giá trị từ cảm biến khoảng cách.
+            </div>
+        </div>
+    </div>
+
+    <!-- KHỞI TẠO WORLD -->
+    <div class="card reveal">
+        <h2>Khởi Tạo World & Chuẩn Bị Dự Án</h2>
+        <h3>Tạo Thế Giới Mới</h3>
+        <ul class="step-list">
+            <li>Mở lại thế giới sa bàn từ bài tập trước (Webots Tutorial 3)</li>
+            <li>Vào menu <code>File → Save World As…</code></li>
+            <li>Đặt tên thế giới mới là: <code>collision_avoidance.wbt</code></li>
+            <li>Giữ nguyên kết cấu đấu trường và các vật thể tĩnh xung quanh</li>
+        </ul>
+        <h3>Yêu Cầu Kiến Thức Nền Tảng</h3>
+        <div class="concept-grid">
+            <div class="concept-item">
+                <div class="label">Kiến trúc Node</div>
+                <p>Đã nắm chắc cấu trúc Node hiển thị, Shape, DEF-USE ở bài trước.</p>
+            </div>
+            <div class="concept-item">
+                <div class="label">Ngôn ngữ C</div>
+                <p>Nắm vững con trỏ, mảng, vòng lặp <code>while/for</code> và câu lệnh điều kiện <code>if-else</code>.</p>
+            </div>
+        </div>
+        <div class="callout callout-warning">
+            <div>
+                <strong>Chu kỳ mô phỏng:</strong> Hiểu thông số <code>basicTimeStep</code> bên trong Node <code>WorldInfo</code>. Đây là bước thời gian cơ sở cho toàn bộ mô phỏng.
+            </div>
+        </div>
+    </div>
+
+    <!-- MÔ HÌNH E-PUCK & CẢM BIẾN -->
+    <div class="card reveal">
+        <h2>Mô Hình Robot E-puck & Cảm Biến Khoảng Cách</h2>
+        <p>Để lập trình thuật toán tránh chướng ngại vật, chúng ta cần đọc giá trị từ <strong>8 cảm biến khoảng cách hồng ngoại</strong> (infrared distance sensors) bố trí quanh thân robot và điều khiển <strong>2 bánh xe</strong>.</p>
+        <div class="callout callout-info">
+            <div>
+                <strong>Trên Scene Tree:</strong> Các cảm biến này được mô hình hóa bởi 8 Node <code>DistanceSensor</code> với các tên gọi tương ứng từ <code>"ps0"</code> đến <code>"ps7"</code>.
+                <br><br>
+                <strong>Trong Webots API:</strong> Cảm biến khoảng cách được truy cập thông qua thư viện <code>#include &lt;webots/distance_sensor.h&gt;</code> (đối với ngôn ngữ C).
+            </div>
+        </div>
+        <h3>Giá Trị Cảm Biến</h3>
+        <p>Giá trị trả về từ cảm biến dao động trong khoảng từ <strong>0</strong> đến <strong>4096</strong> phụ thuộc vào khoảng cách từ cảm biến đến vật cản phía trước:</p>
+        <div class="sensor-info">
+            <div class="sensor-value high">
+                <div class="val danger">4096</div>
+                <p><strong>Vật cản rất gần!</strong><br>Lượng ánh sáng phản xạ cực lớn</p>
+            </div>
+            <div class="sensor-value low">
+                <div class="val safe">0</div>
+                <p><strong>Không có vật cản</strong><br>Không nhận được ánh sáng phản xạ</p>
+            </div>
+        </div>
+        <div class="callout callout-tip">
+            <div>
+                <strong>Hình chiếu từ trên xuống (Top view):</strong> Mũi tên màu xanh lá biểu thị phía trước của robot. Các đường màu đỏ đại diện cho hướng của các cảm biến khoảng cách hồng ngoại.
+            </div>
+        </div>
+    </div>
+
+    <!-- FEEDBACK LOOP — INTERACTIVE -->
+    <div class="card reveal">
+        <h2>Cấu Trúc Vòng Lặp Phản Hồi (Feedback Loop)</h2>
+        <p>Mỗi bộ điều khiển robot tiêu chuẩn đều hoạt động theo một <strong>vòng lặp khép kín</strong> bao gồm các bước theo trình tự nghiêm ngặt sau:</p>
+
+        <!-- Two-column layout: explanation left, flowchart right -->
+        <div class="feedback-layout">
+            <!-- LEFT: Step explanation + code -->
+            <div class="feedback-left">
+                <h3>Giải Thích Từng Bước</h3>
+
+                <div class="code-window" style="margin:12px 0;">
+                    <div class="code-header">
+                        <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                        <div class="code-title">feedback_loop.c</div>
+                    </div>
+                    <pre id="feedback-code" style="font-size:0.8rem; line-height:1.5; padding:14px;">
+<span id="cl-1" class="code-line">wb_robot_init();</span>
+<span id="cl-2" class="code-line">int time_step = wb_robot_get_basic_time_step();</span>
+<span id="cl-3" class="code-line">// ... khởi tạo thiết bị ...</span>
+<span id="cl-4" class="code-line"></span>
+<span id="cl-5" class="code-line">while (wb_robot_step(time_step) != -1) {</span>
+<span id="cl-6" class="code-line">  // Đọc cảm biến</span>
+<span id="cl-7" class="code-line">  ps_values[i] = wb_distance_sensor_get_value(ps[i]);</span>
+<span id="cl-8" class="code-line"></span>
+<span id="cl-9" class="code-line">  // Xử lý logic</span>
+<span id="cl-10" class="code-line">  if (left_obstacle) { /* rẽ phải */ }</span>
+<span id="cl-11" class="code-line"></span>
+<span id="cl-12" class="code-line">  // Ghi motor</span>
+<span id="cl-13" class="code-line">  wb_motor_set_velocity(left_motor, speed);</span>
+<span id="cl-14" class="code-line">}</span>
+<span id="cl-15" class="code-line">wb_robot_cleanup();</span></pre>
+                </div>
+
+                <div id="step-info" class="step-info-box">
+                    <div class="step-info-title" id="step-title">Nhấn <strong>Start</strong> để bắt đầu mô phỏng</div>
+                    <div class="step-info-desc" id="step-desc">Sơ đồ bên phải sẽ tự động chạy qua từng bước trong vòng lặp phản hồi của Robot Controller.</div>
+                </div>
+
+                <div class="step-counter" id="step-counter">Vòng lặp: <strong>0</strong> / Bước: <strong>-</strong></div>
+
+                <!-- Ví dụ thực tế -->
+                <div class="practice-box" style="margin-top:16px; padding:16px;">
+                    <div class="practice-title" style="font-size:0.95rem;">Ví Dụ Thực Tế</div>
+                    <p style="font-size:0.85rem; margin:0 0 8px 0;">Vòng lặp phản hồi có khắp nơi trong cuộc sống:</p>
+                    <ul style="font-size:0.85rem; margin:0; padding-left:18px;">
+                        <li><strong>Lái xe:</strong> Quan sát (cảm biến) → Phân tích (não) → Bẻ lái (motor) → Lặp lại</li>
+                        <li><strong>Điều hòa:</strong> Đo nhiệt độ → So sánh mức cài → Bật/tắt quạt → Lặp lại</li>
+                        <li><strong>Robot hút bụi:</strong> Dò tường → Quyết định hướng → Quay bánh → Lặp lại</li>
+                        <li><strong>Game loop:</strong> Input → Update → Render → Lặp lại (60 FPS)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- RIGHT: Interactive SVG Flowchart -->
+            <div class="feedback-right">
+                <h3 style="text-align:center;">Sơ Đồ Luồng Vòng Lặp</h3>
+
+                <!-- Controls -->
+                <div class="flow-controls">
+                    <button class="flow-btn flow-btn-start" id="btn-start" onclick="flowStart()">&#9654; Start</button>
+                    <button class="flow-btn flow-btn-pause" id="btn-pause" onclick="flowPause()" disabled>&#10074;&#10074; Pause</button>
+                    <button class="flow-btn flow-btn-restart" id="btn-restart" onclick="flowRestart()">&#8635; Restart</button>
+                </div>
+
+                <svg id="flow-svg" viewBox="0 0 340 520" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:340px; margin:0 auto; display:block;">
+                    <!-- ARROWS (drawn first, behind nodes) -->
+                    <!-- Start → Init -->
+                    <line x1="170" y1="48" x2="170" y2="78" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)"/>
+                    <!-- Init → Sim Step (condition) -->
+                    <line x1="170" y1="118" x2="170" y2="158" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)"/>
+                    <!-- Sim Step → Read (Đúng) -->
+                    <line x1="220" y1="190" x2="280" y2="190" stroke="#cbd5e1" stroke-width="2"/>
+                    <line x1="280" y1="190" x2="280" y2="240" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)"/>
+                    <text x="244" y="182" fill="#22c55e" font-size="11" font-weight="600">Đúng</text>
+                    <!-- Read → Process -->
+                    <line x1="280" y1="276" x2="280" y2="310" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)"/>
+                    <!-- Process → Write -->
+                    <line x1="280" y1="346" x2="280" y2="380" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)"/>
+                    <!-- Write → back to Sim Step (loop back) -->
+                    <line x1="280" y1="416" x2="280" y2="440" stroke="#cbd5e1" stroke-width="2"/>
+                    <line x1="280" y1="440" x2="80" y2="440" stroke="#cbd5e1" stroke-width="2"/>
+                    <line x1="80" y1="440" x2="80" y2="190" stroke="#cbd5e1" stroke-width="2"/>
+                    <line x1="80" y1="190" x2="120" y2="190" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)"/>
+                    <!-- Sim Step → Cleanup (Sai) -->
+                    <line x1="170" y1="222" x2="170" y2="470" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow)"/>
+                    <text x="130" y="380" fill="#ef4444" font-size="11" font-weight="600">Sai</text>
+
+                    <!-- Arrowhead marker -->
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+                        </marker>
+                    </defs>
+
+                    <!-- NODE: Bắt Đầu (Start) — rounded pill -->
+                    <g id="node-start" class="flow-node">
+                        <rect x="115" y="14" width="110" height="34" rx="17" fill="#f97316" opacity="0.9"/>
+                        <text x="170" y="36" text-anchor="middle" fill="white" font-size="13" font-weight="600">Bắt Đầu</text>
+                    </g>
+
+                    <!-- NODE: Initialize — rectangle -->
+                    <g id="node-init" class="flow-node">
+                        <rect x="110" y="78" width="120" height="40" rx="8" fill="#3b82f6" opacity="0.9"/>
+                        <text x="170" y="103" text-anchor="middle" fill="white" font-size="12" font-weight="600">Khởi Tạo</text>
+                    </g>
+
+                    <!-- NODE: Simulation Step (condition diamond) -->
+                    <g id="node-simstep" class="flow-node">
+                        <polygon points="170,155 230,190 170,225 110,190" fill="#06b6d4" opacity="0.9"/>
+                        <text x="170" y="194" text-anchor="middle" fill="white" font-size="11" font-weight="600">wb_robot_step</text>
+                        <text x="170" y="207" text-anchor="middle" fill="white" font-size="9">!= -1 ?</text>
+                    </g>
+
+                    <!-- NODE: Read Sensors -->
+                    <g id="node-read" class="flow-node">
+                        <rect x="225" y="240" width="110" height="36" rx="8" fill="#8b5cf6" opacity="0.9"/>
+                        <text x="280" y="263" text-anchor="middle" fill="white" font-size="11" font-weight="600">Read Sensors</text>
+                    </g>
+
+                    <!-- NODE: Process Behavior -->
+                    <g id="node-process" class="flow-node">
+                        <rect x="220" y="310" width="120" height="36" rx="8" fill="#f59e0b" opacity="0.9"/>
+                        <text x="280" y="333" text-anchor="middle" fill="white" font-size="11" font-weight="600">Process Logic</text>
+                    </g>
+
+                    <!-- NODE: Write Actuators -->
+                    <g id="node-write" class="flow-node">
+                        <rect x="220" y="380" width="120" height="36" rx="8" fill="#10b981" opacity="0.9"/>
+                        <text x="280" y="403" text-anchor="middle" fill="white" font-size="11" font-weight="600">Write Motors</text>
+                    </g>
+
+                    <!-- NODE: Cleanup / Kết Thúc -->
+                    <g id="node-cleanup" class="flow-node">
+                        <rect x="115" y="470" width="110" height="34" rx="17" fill="#ef4444" opacity="0.9"/>
+                        <text x="170" y="492" text-anchor="middle" fill="white" font-size="13" font-weight="600">Kết Thúc</text>
+                    </g>
+
+                    <!-- Animated cursor -->
+                    <circle id="flow-cursor" cx="170" cy="31" r="7" fill="#fbbf24" stroke="#f59e0b" stroke-width="2" opacity="0">
+                        <animate attributeName="r" values="6;9;6" dur="0.8s" repeatCount="indefinite"/>
+                    </circle>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* ── FEEDBACK LOOP INTERACTIVE STYLES ── */
+        .feedback-layout {
+            display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:20px;
+        }
+        @media(max-width:750px) {
+            .feedback-layout { grid-template-columns:1fr; }
+            .feedback-right { order:-1; }
+        }
+        .feedback-left, .feedback-right { min-width:0; }
+
+        .step-info-box {
+            background:linear-gradient(135deg, #eff6ff, #f0fdf4);
+            border:2px solid var(--steam-teal); border-radius:10px;
+            padding:14px 16px; margin:12px 0; min-height:70px;
+            transition: border-color 0.3s;
+        }
+        .step-info-title { font-weight:700; font-size:0.95rem; color:var(--steam-blue); margin-bottom:4px; }
+        .step-info-desc { font-size:0.85rem; color:var(--text-muted); }
+
+        .step-counter {
+            font-size:0.85rem; color:var(--text-muted); text-align:center;
+            padding:6px; background:#f1f5f9; border-radius:8px;
+        }
+
+        /* Flow controls */
+        .flow-controls { display:flex; justify-content:center; gap:10px; margin-bottom:12px; }
+        .flow-btn {
+            padding:8px 18px; border:none; border-radius:8px; font-size:0.85rem;
+            font-weight:600; cursor:pointer; font-family:'Inter',sans-serif;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .flow-btn:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 4px 8px rgba(0,0,0,0.15); }
+        .flow-btn:disabled { opacity:0.5; cursor:not-allowed; }
+        .flow-btn-start   { background:#22c55e; color:white; }
+        .flow-btn-pause   { background:#f59e0b; color:white; }
+        .flow-btn-restart { background:#ef4444; color:white; }
+
+        /* SVG flow node active glow */
+        .flow-node rect, .flow-node polygon { transition: filter 0.3s, opacity 0.3s; }
+        .flow-node.active rect,
+        .flow-node.active polygon {
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.8)) drop-shadow(0 0 20px currentColor);
+            opacity:1;
+        }
+        .flow-node:not(.active) rect,
+        .flow-node:not(.active) polygon { opacity:0.5; }
+
+        /* Code line highlight */
+        .code-line { display:block; padding:1px 4px; border-radius:3px; transition: background 0.3s; }
+        .code-line.highlight { background:rgba(96, 165, 250, 0.25); }
+    </style>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         BÀI THỰC HÀNH SỐ 1 — # Chương trình tham khảo (vị trí 1, dòng 165)
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="card reveal">
+        <h2>Các Bài Thực Hành Lập Trình Controller</h2>
+        <p>Chúng ta sẽ chia bài code thành các phần thực hành nhỏ tuân thủ từng nhiệm vụ cụ thể. Mục đích điều khiển Robot:</p>
+        <ul class="bullet-list">
+            <li><strong>Đi thẳng</strong> về phía trước nếu không có vật cản</li>
+            <li><strong>Tự động rẽ</strong> sang hướng không có vật cản khi phát hiện chướng ngại vật phía trước</li>
+        </ul>
+
+        <div class="practice-box">
+            <div class="practice-title">Bài Thực Hành Số 1 — Tạo Controller Mới</div>
+            <ul class="step-list">
+                <li><strong>Bước 1:</strong> Mở thế giới đã lưu <code>collision_avoidance.wbt</code>.</li>
+                <li><strong>Bước 2:</strong> Vào menu <code>File → New → New Robot Controller...</code></li>
+                <li><strong>Bước 3:</strong> Chọn ngôn ngữ lập trình và đặt tên file mã nguồn:
+                    <ul class="bullet-list" style="margin-top:8px;">
+                        <li><strong>C:</strong> <code>epuck_avoid_collision</code></li>
+                        <li><strong>C++ / Java:</strong> <code>EPuckAvoidCollision</code></li>
+                        <li><strong>Python:</strong> <code>epuck_avoid_collision</code></li>
+                    </ul>
+                </li>
+                <li><strong>Bước 4:</strong> Trên Scene Tree, nhấp chọn vào Node <code>E-puck</code>, tìm đến trường <code>controller</code> và đổi từ bộ điều khiển cũ sang tên controller vừa tạo.</li>
+            </ul>
+        </div>
+
+        <h3>Liên Kết Controller Với E-puck</h3>
+        <ul class="step-list">
+            <li>Trên cây Scene Tree, nhấp chọn Node <code>E-puck</code> (nếu chưa có thì thêm vào)</li>
+            <li>Tìm đến trường thuộc tính <code>controller</code></li>
+            <li>Chuyển từ controller mặc định sang tên controller mới</li>
+            <li>Lưu thế giới để thiết lập có hiệu lực vĩnh viễn</li>
+        </ul>
+
+        <div class="video-container">
+            <video controls>
+                <source src="Webots Tutorial 4/Thực hành 1_liên kết epuck_controller.mp4" type="video/mp4">
+                Trình duyệt của bạn không hỗ trợ video.
+            </video>
+        </div>
+        <span class="figure-caption">Video: Liên kết Controller với E-puck</span>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         BÀI THỰC HÀNH SỐ 2 — # Chương trình tham khảo (vị trí 2, dòng 191)
+         Hands on #2: Include directives
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="card reveal">
+        <div class="practice-box">
+            <div class="practice-title">Bài Thực Hành Số 2 — Khai Báo Thư Viện và Cấu Hình Thời Gian Step</div>
+            <h4>Giới Thiệu Thư Viện</h4>
+            <ul class="bullet-list">
+                <li><code>robot.h</code>: Chứa hàm <code>wb_robot_init()</code>, <code>wb_robot_step()</code> và <code>wb_robot_cleanup()</code>.</li>
+                <li><code>distance_sensor.h</code>: Hỗ trợ kích hoạt và đọc dữ liệu quang từ các cảm biến <code>ps0</code> – <code>ps7</code>.</li>
+                <li><code>motor.h</code>: Hỗ trợ điều khiển vị trí, gia tốc và vận tốc quay cho bánh xe.</li>
+                <li><code>TIME_STEP</code>: Robot sẽ cập nhật trạng thái vật lý mỗi chu kỳ (mili-giây).</li>
+            </ul>
+            <p>Mở file code vừa tạo trong trình biên tập tích hợp của Webots và thêm các khai báo thư viện API cùng hằng số chu kỳ:</p>
+        </div>
+
+        <!-- CHƯƠNG TRÌNH THAM KHẢO #2 — Tab đa ngôn ngữ -->
+        <div class="lang-tabs" data-group="code2">
+            <button class="lang-tab active" data-lang="c">C</button>
+            <button class="lang-tab" data-lang="cpp">C++</button>
+            <button class="lang-tab" data-lang="python">Python</button>
+            <button class="lang-tab" data-lang="java">Java</button>
+            <button class="lang-tab" data-lang="matlab">MATLAB</button>
+        </div>
+
+        <div class="lang-panel active" data-group="code2" data-lang="c">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">epuck_avoid_collision.c</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code2-c')">📋 Copy</button>
+                </div>
+                <pre id="code2-c">#include &lt;webots/robot.h&gt;
+#include &lt;webots/distance_sensor.h&gt;
+#include &lt;webots/motor.h&gt;
+
+#define MAX_SPEED 6.28</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code2" data-lang="cpp">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">EPuckAvoidCollision.cpp</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code2-cpp')">📋 Copy</button>
+                </div>
+                <pre id="code2-cpp">#include &lt;webots/Robot.hpp&gt;
+#include &lt;webots/DistanceSensor.hpp&gt;
+#include &lt;webots/Motor.hpp&gt;
+
+#define MAX_SPEED 6.28
+
+// All the webots classes are defined in the "webots" namespace
+using namespace webots;</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code2" data-lang="python">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">epuck_avoid_collision.py</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code2-py')">📋 Copy</button>
+                </div>
+                <pre id="code2-py">from controller import Robot, DistanceSensor, Motor
+
+MAX_SPEED = 6.28</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code2" data-lang="java">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">EPuckAvoidCollision.java</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code2-java')">📋 Copy</button>
+                </div>
+                <pre id="code2-java">import com.cyberbotics.webots.controller.Robot;
+import com.cyberbotics.webots.controller.DistanceSensor;
+import com.cyberbotics.webots.controller.Motor;
+
+public class EPuckAvoidCollision {
+
+  public static void main(String[] args) {
+    double MAX_SPEED = 6.28;
+    // ... (code tiếp theo)
+  }
+}</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code2" data-lang="matlab">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">epuck_avoid_collision.m</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code2-matlab')">📋 Copy</button>
+                </div>
+                <pre id="code2-matlab">function epuck_avoid_collision
+
+MAX_SPEED = 6.28;</pre>
+            </div>
+        </div>
+
+        <div class="callout callout-info">
+            <div>
+                <strong>Nhận xét:</strong> Bài Thực hành số 1 và số 2 thực chất là thực hiện bước <strong>Initialize Robot</strong>, đây luôn là bước đầu tiên trong mọi bài lập trình Controller cho bất kì loại Robot nào.
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         BÀI THỰC HÀNH SỐ 3 — # Chương trình tham khảo (vị trí 3, dòng 217)
+         Hands on #3: Main function skeleton
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="card reveal">
+        <div class="practice-box">
+            <div class="practice-title">Bài Thực Hành Số 3 — Thiết Lập Hàm Main và Vòng Lặp Phản Hồi</div>
+            <h4>Cơ Chế Đồng Bộ Hóa</h4>
+            <ul class="bullet-list">
+                <li><code>wb_robot_init()</code>: Bắt buộc chạy đầu tiên để giao tiếp giữa trình mô phỏng và code.</li>
+                <li><code>wb_robot_step(TIME_STEP)</code>: Tạm dừng chương trình cho đến khi thế giới vật lý chạy xong. Trả về <code>-1</code> khi người dùng dừng mô phỏng.</li>
+                <li><code>wb_robot_cleanup()</code>: Dọn dẹp tài nguyên bộ nhớ trước khi thoát an toàn.</li>
+            </ul>
+        </div>
+
+        <!-- CHƯƠNG TRÌNH THAM KHẢO #3 — Tab đa ngôn ngữ -->
+        <div class="lang-tabs" data-group="code3">
+            <button class="lang-tab active" data-lang="c">C</button>
+            <button class="lang-tab" data-lang="cpp">C++</button>
+            <button class="lang-tab" data-lang="python">Python</button>
+            <button class="lang-tab" data-lang="java">Java</button>
+            <button class="lang-tab" data-lang="matlab">MATLAB</button>
+        </div>
+
+        <div class="lang-panel active" data-group="code3" data-lang="c">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">epuck_avoid_collision.c — main()</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code3-c')">📋 Copy</button>
+                </div>
+                <pre id="code3-c">// entry point of the controller
+int main(int argc, char **argv) {
+  // initialize the Webots API
+  wb_robot_init();
+  // get the time step of the current world
+  const int time_step = (int) wb_robot_get_basic_time_step();
+
+  // initialize devices
+  // ...
+
+  // feedback loop: step simulation until receiving an exit event
+  while (wb_robot_step(time_step) != -1) {
+    // read sensors outputs
+    // process behavior
+    // write actuators inputs
+  }
+
+  // cleanup the Webots API
+  wb_robot_cleanup();
+  return 0; //EXIT_SUCCESS
+}</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code3" data-lang="cpp">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">EPuckAvoidCollision.cpp — main()</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code3-cpp')">📋 Copy</button>
+                </div>
+                <pre id="code3-cpp">// entry point of the controller
+int main(int argc, char **argv) {
+  // create the Robot instance.
+  Robot *robot = new Robot();
+  // get the time step of the current world
+  int timeStep = (int)robot-&gt;getBasicTimeStep();
+
+  // initialize devices
+  // ...
+
+  // feedback loop: step simulation until receiving an exit event
+  while (robot-&gt;step(timeStep) != -1) {
+    // read sensors outputs
+    // process behavior
+    // write actuators inputs
+  }
+
+  delete robot;
+  return 0; //EXIT_SUCCESS
+}</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code3" data-lang="python">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">epuck_avoid_collision.py</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code3-py')">📋 Copy</button>
+                </div>
+                <pre id="code3-py"># create the Robot instance.
+robot = Robot()
+# get the time step of the current world
+timestep = int(robot.getBasicTimeStep())
+
+# initialize devices
+# ...
+
+# feedback loop: step simulation until receiving an exit event
+while robot.step(timestep) != -1:
+    # read sensors outputs
+    # process behavior
+    # write actuators inputs
+    pass</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code3" data-lang="java">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">EPuckAvoidCollision.java — main()</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code3-java')">📋 Copy</button>
+                </div>
+                <pre id="code3-java">// entry point of the controller
+public static void main(String[] args) {
+  // create the Robot instance.
+  Robot robot = new Robot();
+  // get the time step of the current world
+  int timeStep = (int) robot.getBasicTimeStep();
+
+  // initialize devices
+  // ...
+
+  // feedback loop: step simulation until receiving an exit event
+  while (robot.step(timeStep) != -1) {
+    // read sensors outputs
+    // process behavior
+    // write actuators inputs
+  };
+}</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code3" data-lang="matlab">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">epuck_avoid_collision.m</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code3-matlab')">📋 Copy</button>
+                </div>
+                <pre id="code3-matlab">% get the time step of the current world
+TIME_STEP = wb_robot_get_basic_time_step();
+
+% initialize devices
+% ...
+
+% feedback loop: step simulation until receiving an exit event
+while wb_robot_step(TIME_STEP) ~= -1
+  % read sensors outputs
+  % process behavior
+  % write actuators inputs
+
+  % if your code plots some graphics, it needs to flushed like this:
+  drawnow;
+end</pre>
+            </div>
+        </div>
+
+        <div class="callout callout-warning">
+            <div>
+                <strong>Lưu ý:</strong> Đây chỉ là khung của hàm <code>main()</code>, bạn cần phải thêm các thuật toán, khai báo bên trong để hoàn thành việc lập trình cho Controllers.
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         BÀI THỰC HÀNH SỐ 4 — # Chương trình tham khảo (vị trí 4, dòng 241)
+         Hands on #4: Initialize sensors & motors
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="card reveal">
+        <div class="practice-box">
+            <div class="practice-title">Bài Thực Hành Số 4 — Khởi Tạo Cảm Biến và Động Cơ Bánh Xe</div>
+            <h4>Điểm Mấu Chốt Cần Nhớ</h4>
+            <ul class="bullet-list">
+                <li><code>WbDeviceTag</code>: Là kiểu dữ liệu định danh phần cứng trong Webots (C). Các ngôn ngữ OOP dùng đối tượng trực tiếp.</li>
+                <li><code>wb_distance_sensor_enable()</code>: Bắt buộc phải kích hoạt cảm biến trước khi đọc giá trị.</li>
+                <li><strong>Chế độ Vận tốc (Velocity Mode):</strong> Đặt vị trí là <code>INFINITY</code> giúp động cơ quay liên tục thay vì dừng ở một góc xác định.</li>
+            </ul>
+        </div>
+        <p>Thêm đoạn mã cấu hình tag thiết bị và kích hoạt chu kỳ quét cho 8 cảm biến hồng ngoại cùng hệ thống motor ngay <strong>trước vòng lặp while</strong>:</p>
+
+        <!-- CHƯƠNG TRÌNH THAM KHẢO #4 — Tab đa ngôn ngữ -->
+        <div class="lang-tabs" data-group="code4">
+            <button class="lang-tab active" data-lang="c">C</button>
+            <button class="lang-tab" data-lang="cpp">C++</button>
+            <button class="lang-tab" data-lang="python">Python</button>
+            <button class="lang-tab" data-lang="java">Java</button>
+            <button class="lang-tab" data-lang="matlab">MATLAB</button>
+        </div>
+
+        <div class="lang-panel active" data-group="code4" data-lang="c">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">C — Khởi tạo thiết bị</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code4-c')">📋 Copy</button>
+                </div>
+                <pre id="code4-c">// initialize devices
+int i;
+WbDeviceTag ps[8];
+char ps_names[8][4] = {
+  "ps0", "ps1", "ps2", "ps3",
+  "ps4", "ps5", "ps6", "ps7"
+};
+
+for (i = 0; i &lt; 8; i++) {
+  ps[i] = wb_robot_get_device(ps_names[i]);
+  wb_distance_sensor_enable(ps[i], time_step);
+}
+
+WbDeviceTag left_motor = wb_robot_get_device("left wheel motor");
+WbDeviceTag right_motor = wb_robot_get_device("right wheel motor");
+wb_motor_set_position(left_motor, INFINITY);
+wb_motor_set_position(right_motor, INFINITY);
+wb_motor_set_velocity(left_motor, 0.0);
+wb_motor_set_velocity(right_motor, 0.0);</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code4" data-lang="cpp">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">C++ — Khởi tạo thiết bị</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code4-cpp')">📋 Copy</button>
+                </div>
+                <pre id="code4-cpp">// initialize devices
+DistanceSensor *ps[8];
+char psNames[8][4] = {
+  "ps0", "ps1", "ps2", "ps3",
+  "ps4", "ps5", "ps6", "ps7"
+};
+
+for (int i = 0; i &lt; 8; i++) {
+  ps[i] = robot-&gt;getDistanceSensor(psNames[i]);
+  ps[i]-&gt;enable(timeStep);
+}
+
+Motor *leftMotor = robot-&gt;getMotor("left wheel motor");
+Motor *rightMotor = robot-&gt;getMotor("right wheel motor");
+leftMotor-&gt;setPosition(INFINITY);
+rightMotor-&gt;setPosition(INFINITY);
+leftMotor-&gt;setVelocity(0.0);
+rightMotor-&gt;setVelocity(0.0);</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code4" data-lang="python">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">Python — Khởi tạo thiết bị</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code4-py')">📋 Copy</button>
+                </div>
+                <pre id="code4-py"># initialize devices
+ps = []
+psNames = [
+    'ps0', 'ps1', 'ps2', 'ps3',
+    'ps4', 'ps5', 'ps6', 'ps7'
+]
+
+for i in range(8):
+    ps.append(robot.getDevice(psNames[i]))
+    ps[i].enable(timestep)
+
+leftMotor = robot.getDevice('left wheel motor')
+rightMotor = robot.getDevice('right wheel motor')
+leftMotor.setPosition(float('inf'))
+rightMotor.setPosition(float('inf'))
+leftMotor.setVelocity(0.0)
+rightMotor.setVelocity(0.0)</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code4" data-lang="java">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">Java — Khởi tạo thiết bị</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code4-java')">📋 Copy</button>
+                </div>
+                <pre id="code4-java">// initialize devices
+DistanceSensor[] ps = new DistanceSensor[8];
+String[] psNames = {
+  "ps0", "ps1", "ps2", "ps3",
+  "ps4", "ps5", "ps6", "ps7"
+};
+
+for (int i = 0; i &lt; 8; i++) {
+  ps[i] = robot.getDistanceSensor(psNames[i]);
+  ps[i].enable(timeStep);
+}
+
+Motor leftMotor = robot.getMotor("left wheel motor");
+Motor rightMotor = robot.getMotor("right wheel motor");
+leftMotor.setPosition(Double.POSITIVE_INFINITY);
+rightMotor.setPosition(Double.POSITIVE_INFINITY);
+leftMotor.setVelocity(0.0);
+rightMotor.setVelocity(0.0);</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code4" data-lang="matlab">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">MATLAB — Khởi tạo thiết bị</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code4-matlab')">📋 Copy</button>
+                </div>
+                <pre id="code4-matlab">% initialize devices
+ps = [];
+ps_names = [ "ps0", "ps1", "ps2", "ps3", "ps4", "ps5", "ps6", "ps7" ];
+
+for i = 1:8
+  ps(i) = wb_robot_get_device(convertStringsToChars(ps_names(i)));
+  wb_distance_sensor_enable(ps(i), TIME_STEP);
+end
+
+left_motor = wb_robot_get_device('left wheel motor');
+right_motor = wb_robot_get_device('right wheel motor');
+wb_motor_set_position(left_motor, inf);
+wb_motor_set_position(right_motor, inf);
+wb_motor_set_velocity(left_motor, 0.0);
+wb_motor_set_velocity(right_motor, 0.0);</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         BÀI THỰC HÀNH SỐ 5 — # Chương trình tham khảo (vị trí 5, dòng 259)
+         Hands on #4 continued: Read sensors + Process + Write actuators
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="card reveal">
+        <div class="practice-box">
+            <div class="practice-title">Bài Thực Hành Số 5 — Hoàn Thiện Thuật Toán Tránh Vật Cản</div>
+            <h4>Nguyên Lý Điều Hướng</h4>
+            <ul class="bullet-list">
+                <li><strong>Đi thẳng:</strong> Cả 2 bánh quay cùng chiều với tốc độ cơ sở <code>0.5 * MAX_SPEED</code> (~3.14 rad/s).</li>
+                <li><strong>Gặp cản bên trái:</strong> Đảo chiều bánh phải quay lùi (<code>-0.5 * MAX_SPEED</code>), bánh trái quay tiến → Robot xoay sang phải.</li>
+                <li><strong>Gặp cản bên phải:</strong> Đảo chiều bánh trái quay lùi, bánh phải quay tiến → Robot xoay sang trái.</li>
+            </ul>
+        </div>
+        <p>Thêm các đoạn mã xử lý đọc dữ liệu và kiểm soát vận tốc bánh xe vào <strong>bên trong vòng lặp while</strong>:</p>
+
+        <!-- CHƯƠNG TRÌNH THAM KHẢO #5 — Tab đa ngôn ngữ -->
+        <div class="lang-tabs" data-group="code5">
+            <button class="lang-tab active" data-lang="c">C</button>
+            <button class="lang-tab" data-lang="cpp">C++</button>
+            <button class="lang-tab" data-lang="python">Python</button>
+            <button class="lang-tab" data-lang="java">Java</button>
+            <button class="lang-tab" data-lang="matlab">MATLAB</button>
+        </div>
+
+        <div class="lang-panel active" data-group="code5" data-lang="c">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">C — Thuật toán tránh vật cản</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code5-c')">📋 Copy</button>
+                </div>
+                <pre id="code5-c">// read sensors outputs
+double ps_values[8];
+for (i = 0; i &lt; 8 ; i++)
+  ps_values[i] = wb_distance_sensor_get_value(ps[i]);
+
+// detect obstacles
+bool right_obstacle =
+  ps_values[0] &gt; 80.0 ||
+  ps_values[1] &gt; 80.0 ||
+  ps_values[2] &gt; 80.0;
+bool left_obstacle =
+  ps_values[5] &gt; 80.0 ||
+  ps_values[6] &gt; 80.0 ||
+  ps_values[7] &gt; 80.0;
+
+// initialize motor speeds at 50% of MAX_SPEED.
+double left_speed  = 0.5 * MAX_SPEED;
+double right_speed = 0.5 * MAX_SPEED;
+
+// modify speeds according to obstacles
+if (left_obstacle) {
+  // turn right
+  left_speed  = 0.5 * MAX_SPEED;
+  right_speed = -0.5 * MAX_SPEED;
+}
+else if (right_obstacle) {
+  // turn left
+  left_speed  = -0.5 * MAX_SPEED;
+  right_speed = 0.5 * MAX_SPEED;
+}
+
+// write actuators inputs
+wb_motor_set_velocity(left_motor, left_speed);
+wb_motor_set_velocity(right_motor, right_speed);</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code5" data-lang="cpp">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">C++ — Thuật toán tránh vật cản</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code5-cpp')">📋 Copy</button>
+                </div>
+                <pre id="code5-cpp">// read sensors outputs
+double psValues[8];
+for (int i = 0; i &lt; 8 ; i++)
+  psValues[i] = ps[i]-&gt;getValue();
+
+// detect obstacles
+bool right_obstacle =
+  psValues[0] &gt; 80.0 ||
+  psValues[1] &gt; 80.0 ||
+  psValues[2] &gt; 80.0;
+bool left_obstacle =
+  psValues[5] &gt; 80.0 ||
+  psValues[6] &gt; 80.0 ||
+  psValues[7] &gt; 80.0;
+
+// initialize motor speeds at 50% of MAX_SPEED.
+double leftSpeed  = 0.5 * MAX_SPEED;
+double rightSpeed = 0.5 * MAX_SPEED;
+
+// modify speeds according to obstacles
+if (left_obstacle) {
+  // turn right
+  leftSpeed  = 0.5 * MAX_SPEED;
+  rightSpeed = -0.5 * MAX_SPEED;
+}
+else if (right_obstacle) {
+  // turn left
+  leftSpeed  = -0.5 * MAX_SPEED;
+  rightSpeed = 0.5 * MAX_SPEED;
+}
+
+// write actuators inputs
+leftMotor-&gt;setVelocity(leftSpeed);
+rightMotor-&gt;setVelocity(rightSpeed);</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code5" data-lang="python">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">Python — Thuật toán tránh vật cản</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code5-py')">📋 Copy</button>
+                </div>
+                <pre id="code5-py"># read sensors outputs
+psValues = []
+for i in range(8):
+    psValues.append(ps[i].getValue())
+
+# detect obstacles
+right_obstacle = psValues[0] &gt; 80.0 or psValues[1] &gt; 80.0 or psValues[2] &gt; 80.0
+left_obstacle = psValues[5] &gt; 80.0 or psValues[6] &gt; 80.0 or psValues[7] &gt; 80.0
+
+# initialize motor speeds at 50% of MAX_SPEED.
+leftSpeed  = 0.5 * MAX_SPEED
+rightSpeed = 0.5 * MAX_SPEED
+
+# modify speeds according to obstacles
+if left_obstacle:
+    # turn right
+    leftSpeed  = 0.5 * MAX_SPEED
+    rightSpeed = -0.5 * MAX_SPEED
+elif right_obstacle:
+    # turn left
+    leftSpeed  = -0.5 * MAX_SPEED
+    rightSpeed = 0.5 * MAX_SPEED
+
+# write actuators inputs
+leftMotor.setVelocity(leftSpeed)
+rightMotor.setVelocity(rightSpeed)</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code5" data-lang="java">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">Java — Thuật toán tránh vật cản</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code5-java')">📋 Copy</button>
+                </div>
+                <pre id="code5-java">// read sensors outputs
+double[] psValues = {0, 0, 0, 0, 0, 0, 0, 0};
+for (int i = 0; i &lt; 8 ; i++)
+  psValues[i] = ps[i].getValue();
+
+// detect obstacles
+boolean right_obstacle =
+  psValues[0] &gt; 80.0 ||
+  psValues[1] &gt; 80.0 ||
+  psValues[2] &gt; 80.0;
+boolean left_obstacle =
+  psValues[5] &gt; 80.0 ||
+  psValues[6] &gt; 80.0 ||
+  psValues[7] &gt; 80.0;
+
+// initialize motor speeds at 50% of MAX_SPEED.
+double leftSpeed  = 0.5 * MAX_SPEED;
+double rightSpeed = 0.5 * MAX_SPEED;
+
+// modify speeds according to obstacles
+if (left_obstacle) {
+  // turn right
+  leftSpeed  = 0.5 * MAX_SPEED;
+  rightSpeed = -0.5 * MAX_SPEED;
+}
+else if (right_obstacle) {
+  // turn left
+  leftSpeed  = -0.5 * MAX_SPEED;
+  rightSpeed = 0.5 * MAX_SPEED;
+}
+
+// write actuators inputs
+leftMotor.setVelocity(leftSpeed);
+rightMotor.setVelocity(rightSpeed);</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="code5" data-lang="matlab">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">MATLAB — Thuật toán tránh vật cản</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'code5-matlab')">📋 Copy</button>
+                </div>
+                <pre id="code5-matlab">% read sensors outputs
+ps_values = [];
+for i = 1:8
+  ps_values(i) = wb_distance_sensor_get_value(ps(i));
+end
+
+% detect obstacles
+right_obstacle = ps_values(1) &gt; 80.0 | ps_values(2) &gt; 80.0 | ps_values(3) &gt; 80.0;
+left_obstacle = ps_values(6) &gt; 80.0 | ps_values(7) &gt; 80.0 | ps_values(8) &gt; 80.0;
+
+% initialize motor speeds at 50% of MAX_SPEED.
+left_speed  = 0.5 * MAX_SPEED;
+right_speed = 0.5 * MAX_SPEED;
+
+% modify speeds according to obstacles
+if left_obstacle
+  % turn right
+  left_speed   = 0.5 * MAX_SPEED;
+  right_speed  = -0.5 * MAX_SPEED;
+elseif right_obstacle
+  % turn left
+  left_speed  = -0.5 * MAX_SPEED;
+  right_speed = 0.5 * MAX_SPEED;
+end
+
+% write actuators inputs
+wb_motor_set_velocity(left_motor, left_speed);
+wb_motor_set_velocity(right_motor, right_speed);</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         CHƯƠNG TRÌNH HOÀN CHỈNH — Bonus: Full code
+         ════════════════════════════════════════════════════════════════ -->
+    <div class="card reveal">
+        <h2>Chương Trình Hoàn Chỉnh (Tham Khảo)</h2>
+        <p>Dưới đây là toàn bộ mã nguồn hoàn chỉnh ghép từ tất cả các bài thực hành ở trên:</p>
+
+        <div class="lang-tabs" data-group="full">
+            <button class="lang-tab active" data-lang="c">C</button>
+            <button class="lang-tab" data-lang="cpp">C++</button>
+            <button class="lang-tab" data-lang="python">Python</button>
+            <button class="lang-tab" data-lang="java">Java</button>
+            <button class="lang-tab" data-lang="matlab">MATLAB</button>
+        </div>
+
+        <div class="lang-panel active" data-group="full" data-lang="c">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">epuck_avoid_collision.c — FULL</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'full-c')">📋 Copy</button>
+                </div>
+                <pre id="full-c">#include &lt;webots/robot.h&gt;
+#include &lt;webots/distance_sensor.h&gt;
+#include &lt;webots/motor.h&gt;
+
+#define MAX_SPEED 6.28
+
+int main(int argc, char **argv) {
+  wb_robot_init();
+  const int time_step = (int) wb_robot_get_basic_time_step();
+
+  int i;
+  WbDeviceTag ps[8];
+  char ps_names[8][4] = {
+    "ps0", "ps1", "ps2", "ps3",
+    "ps4", "ps5", "ps6", "ps7"
+  };
+
+  for (i = 0; i &lt; 8 ; i++) {
+    ps[i] = wb_robot_get_device(ps_names[i]);
+    wb_distance_sensor_enable(ps[i], time_step);
+  }
+
+  WbDeviceTag left_motor = wb_robot_get_device("left wheel motor");
+  WbDeviceTag right_motor = wb_robot_get_device("right wheel motor");
+  wb_motor_set_position(left_motor, INFINITY);
+  wb_motor_set_position(right_motor, INFINITY);
+  wb_motor_set_velocity(left_motor, 0.0);
+  wb_motor_set_velocity(right_motor, 0.0);
+
+  while (wb_robot_step(time_step) != -1) {
+    double ps_values[8];
+    for (i = 0; i &lt; 8 ; i++)
+      ps_values[i] = wb_distance_sensor_get_value(ps[i]);
+
+    bool right_obstacle =
+      ps_values[0] &gt; 80.0 ||
+      ps_values[1] &gt; 80.0 ||
+      ps_values[2] &gt; 80.0;
+    bool left_obstacle =
+      ps_values[5] &gt; 80.0 ||
+      ps_values[6] &gt; 80.0 ||
+      ps_values[7] &gt; 80.0;
+
+    double left_speed  = 0.5 * MAX_SPEED;
+    double right_speed = 0.5 * MAX_SPEED;
+
+    if (left_obstacle) {
+      left_speed  = 0.5 * MAX_SPEED;
+      right_speed = -0.5 * MAX_SPEED;
+    }
+    else if (right_obstacle) {
+      left_speed  = -0.5 * MAX_SPEED;
+      right_speed = 0.5 * MAX_SPEED;
+    }
+
+    wb_motor_set_velocity(left_motor, left_speed);
+    wb_motor_set_velocity(right_motor, right_speed);
+  }
+
+  wb_robot_cleanup();
+  return 0;
+}</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="full" data-lang="cpp">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">EPuckAvoidCollision.cpp — FULL</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'full-cpp')">📋 Copy</button>
+                </div>
+                <pre id="full-cpp">#include &lt;webots/Robot.hpp&gt;
+#include &lt;webots/DistanceSensor.hpp&gt;
+#include &lt;webots/Motor.hpp&gt;
+
+#define MAX_SPEED 6.28
+using namespace webots;
+
+int main(int argc, char **argv) {
+  Robot *robot = new Robot();
+  int timeStep = (int)robot-&gt;getBasicTimeStep();
+
+  DistanceSensor *ps[8];
+  char psNames[8][4] = {
+    "ps0", "ps1", "ps2", "ps3",
+    "ps4", "ps5", "ps6", "ps7"
+  };
+
+  for (int i = 0; i &lt; 8; i++) {
+    ps[i] = robot-&gt;getDistanceSensor(psNames[i]);
+    ps[i]-&gt;enable(timeStep);
+  }
+
+  Motor *leftMotor = robot-&gt;getMotor("left wheel motor");
+  Motor *rightMotor = robot-&gt;getMotor("right wheel motor");
+  leftMotor-&gt;setPosition(INFINITY);
+  rightMotor-&gt;setPosition(INFINITY);
+  leftMotor-&gt;setVelocity(0.0);
+  rightMotor-&gt;setVelocity(0.0);
+
+  while (robot-&gt;step(timeStep) != -1) {
+    double psValues[8];
+    for (int i = 0; i &lt; 8 ; i++)
+      psValues[i] = ps[i]-&gt;getValue();
+
+    bool right_obstacle =
+      psValues[0] &gt; 80.0 || psValues[1] &gt; 80.0 || psValues[2] &gt; 80.0;
+    bool left_obstacle =
+      psValues[5] &gt; 80.0 || psValues[6] &gt; 80.0 || psValues[7] &gt; 80.0;
+
+    double leftSpeed  = 0.5 * MAX_SPEED;
+    double rightSpeed = 0.5 * MAX_SPEED;
+
+    if (left_obstacle) {
+      leftSpeed  = 0.5 * MAX_SPEED;
+      rightSpeed = -0.5 * MAX_SPEED;
+    }
+    else if (right_obstacle) {
+      leftSpeed  = -0.5 * MAX_SPEED;
+      rightSpeed = 0.5 * MAX_SPEED;
+    }
+
+    leftMotor-&gt;setVelocity(leftSpeed);
+    rightMotor-&gt;setVelocity(rightSpeed);
+  }
+
+  delete robot;
+  return 0;
+}</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="full" data-lang="python">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">epuck_avoid_collision.py — FULL</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'full-py')">📋 Copy</button>
+                </div>
+                <pre id="full-py">from controller import Robot, DistanceSensor, Motor
+
+MAX_SPEED = 6.28
+robot = Robot()
+timestep = int(robot.getBasicTimeStep())
+
+ps = []
+psNames = [
+    'ps0', 'ps1', 'ps2', 'ps3',
+    'ps4', 'ps5', 'ps6', 'ps7'
+]
+
+for i in range(8):
+    ps.append(robot.getDevice(psNames[i]))
+    ps[i].enable(timestep)
+
+leftMotor = robot.getDevice('left wheel motor')
+rightMotor = robot.getDevice('right wheel motor')
+leftMotor.setPosition(float('inf'))
+rightMotor.setPosition(float('inf'))
+leftMotor.setVelocity(0.0)
+rightMotor.setVelocity(0.0)
+
+while robot.step(timestep) != -1:
+    psValues = []
+    for i in range(8):
+        psValues.append(ps[i].getValue())
+
+    right_obstacle = psValues[0] &gt; 80.0 or psValues[1] &gt; 80.0 or psValues[2] &gt; 80.0
+    left_obstacle = psValues[5] &gt; 80.0 or psValues[6] &gt; 80.0 or psValues[7] &gt; 80.0
+
+    leftSpeed  = 0.5 * MAX_SPEED
+    rightSpeed = 0.5 * MAX_SPEED
+
+    if left_obstacle:
+        leftSpeed  = 0.5 * MAX_SPEED
+        rightSpeed = -0.5 * MAX_SPEED
+    elif right_obstacle:
+        leftSpeed  = -0.5 * MAX_SPEED
+        rightSpeed = 0.5 * MAX_SPEED
+
+    leftMotor.setVelocity(leftSpeed)
+    rightMotor.setVelocity(rightSpeed)</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="full" data-lang="java">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">EPuckAvoidCollision.java — FULL</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'full-java')">📋 Copy</button>
+                </div>
+                <pre id="full-java">import com.cyberbotics.webots.controller.Robot;
+import com.cyberbotics.webots.controller.DistanceSensor;
+import com.cyberbotics.webots.controller.Motor;
+
+public class EPuckAvoidCollision {
+  public static void main(String[] args) {
+    double MAX_SPEED = 6.28;
+    Robot robot = new Robot();
+    int timeStep = (int) robot.getBasicTimeStep();
+
+    DistanceSensor[] ps = new DistanceSensor[8];
+    String[] psNames = {
+      "ps0", "ps1", "ps2", "ps3",
+      "ps4", "ps5", "ps6", "ps7"
+    };
+
+    for (int i = 0; i &lt; 8; i++) {
+      ps[i] = robot.getDistanceSensor(psNames[i]);
+      ps[i].enable(timeStep);
+    }
+
+    Motor leftMotor = robot.getMotor("left wheel motor");
+    Motor rightMotor = robot.getMotor("right wheel motor");
+    leftMotor.setPosition(Double.POSITIVE_INFINITY);
+    rightMotor.setPosition(Double.POSITIVE_INFINITY);
+    leftMotor.setVelocity(0.0);
+    rightMotor.setVelocity(0.0);
+
+    while (robot.step(timeStep) != -1) {
+      double[] psValues = {0, 0, 0, 0, 0, 0, 0, 0};
+      for (int i = 0; i &lt; 8 ; i++)
+        psValues[i] = ps[i].getValue();
+
+      boolean right_obstacle =
+        psValues[0] &gt; 80.0 || psValues[1] &gt; 80.0 || psValues[2] &gt; 80.0;
+      boolean left_obstacle =
+        psValues[5] &gt; 80.0 || psValues[6] &gt; 80.0 || psValues[7] &gt; 80.0;
+
+      double leftSpeed  = 0.5 * MAX_SPEED;
+      double rightSpeed = 0.5 * MAX_SPEED;
+
+      if (left_obstacle) {
+        leftSpeed  = 0.5 * MAX_SPEED;
+        rightSpeed = -0.5 * MAX_SPEED;
+      }
+      else if (right_obstacle) {
+        leftSpeed  = -0.5 * MAX_SPEED;
+        rightSpeed = 0.5 * MAX_SPEED;
+      }
+
+      leftMotor.setVelocity(leftSpeed);
+      rightMotor.setVelocity(rightSpeed);
+    };
+  }
+}</pre>
+            </div>
+        </div>
+
+        <div class="lang-panel" data-group="full" data-lang="matlab">
+            <div class="code-window tabbed">
+                <div class="code-header">
+                    <div class="mac-dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+                    <div class="code-title">epuck_avoid_collision.m — FULL</div>
+                    <button class="copy-btn" onclick="copyCode(this, 'full-matlab')">📋 Copy</button>
+                </div>
+                <pre id="full-matlab">function epuck_avoid_collision
+
+TIME_STEP = wb_robot_get_basic_time_step();
+MAX_SPEED = 6.28;
+
+ps = [];
+ps_names = [ "ps0", "ps1", "ps2", "ps3", "ps4", "ps5", "ps6", "ps7" ];
+
+for i = 1:8
+  ps(i) = wb_robot_get_device(convertStringsToChars(ps_names(i)));
+  wb_distance_sensor_enable(ps(i), TIME_STEP);
+end
+
+left_motor = wb_robot_get_device('left wheel motor');
+right_motor = wb_robot_get_device('right wheel motor');
+wb_motor_set_position(left_motor, inf);
+wb_motor_set_position(right_motor, inf);
+wb_motor_set_velocity(left_motor, 0.0);
+wb_motor_set_velocity(right_motor, 0.0);
+
+while wb_robot_step(TIME_STEP) ~= -1
+  ps_values = [];
+  for i = 1:8
+    ps_values(i) = wb_distance_sensor_get_value(ps(i));
+  end
+
+  right_obstacle = ps_values(1) &gt; 80.0 | ps_values(2) &gt; 80.0 | ps_values(3) &gt; 80.0;
+  left_obstacle = ps_values(6) &gt; 80.0 | ps_values(7) &gt; 80.0 | ps_values(8) &gt; 80.0;
+
+  left_speed  = 0.5 * MAX_SPEED;
+  right_speed = 0.5 * MAX_SPEED;
+
+  if left_obstacle
+    left_speed   = 0.5 * MAX_SPEED;
+    right_speed  = -0.5 * MAX_SPEED;
+  elseif right_obstacle
+    left_speed  = -0.5 * MAX_SPEED;
+    right_speed = 0.5 * MAX_SPEED;
+  end
+
+  wb_motor_set_velocity(left_motor, left_speed);
+  wb_motor_set_velocity(right_motor, right_speed);
+  drawnow;
+end</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- LƯU Ý BIÊN DỊCH -->
+    <div class="card reveal">
+        <h2>Lưu Ý Quan Trọng Khi Biên Dịch & Chạy</h2>
+        <div class="callout callout-error">
+            <div>
+                <strong>Bước 1 — Build:</strong> Sau khi viết xong code, bắt buộc phải nhấn nút <strong>Build</strong> (biểu tượng hộp bánh răng) trên thanh công cụ Text Editor để biên dịch mã nguồn. (Với Python/MATLAB, chỉ cần Save.)
+            </div>
+        </div>
+        <div class="callout callout-warning">
+            <div>
+                <strong>Bước 2 — Kiểm tra lỗi:</strong> Nếu xuất hiện lỗi chữ <strong>màu đỏ</strong> ở cửa sổ Console, hãy kiểm tra kỹ ký tự hoặc cú pháp dòng báo lỗi để chỉnh sửa.
+            </div>
+        </div>
+        <div class="callout callout-success">
+            <div>
+                <strong>Bước 3 — Reload:</strong> Sau khi tiến trình biên dịch báo thành công (chữ xanh), bắt buộc phải nhấn nút <strong>Reload</strong> thế giới mô phỏng trên thanh công cụ Webots thì robot mới nạp thuật toán mới. <em>Nếu quên bước này, robot sẽ đứng yên hoặc chạy theo dữ liệu cũ!</em>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer-card reveal">
+        <h2 style="color:white;">TỔNG KẾT — Tutorial 4</h2>
+        <ul style="text-align:left; max-width:620px; margin:0 auto 20px auto; line-height:1.9;">
+            <li>Hiểu vai trò của <strong>Controller</strong> và cách liên kết với robot E-puck.</li>
+            <li>Nắm vững <strong>Webots API</strong> và các thư viện <code>robot.h</code>, <code>distance_sensor.h</code>, <code>motor.h</code>.</li>
+            <li>Thiết lập cấu trúc <strong>Feedback Loop</strong> hoàn chỉnh với <code>wb_robot_init()</code>, <code>wb_robot_step()</code>, <code>wb_robot_cleanup()</code>.</li>
+            <li>Khởi tạo và đọc giá trị từ <strong>8 cảm biến khoảng cách</strong> (<code>ps0</code>–<code>ps7</code>).</li>
+            <li>Điều khiển <strong>2 motor bánh xe</strong> ở chế độ Velocity Mode.</li>
+            <li>Lập trình thuật toán <strong>Collision Avoidance</strong> — robot tự động né chướng ngại vật.</li>
+        </ul>
+        <div style="margin-top:30px;">
+            <span class="tag">Team Simulation - Robotics</span>
+            <span class="tag">Liên hệ hỗ trợ: Phạm Hoàng Huy</span>
+            <span class="tag">Email: hoanghuy.pham@steamforvietnam.org</span>
+        </div>
+    </div>
+</main>
+
+<script>
+    // ── Scroll Reveal ──
+    document.addEventListener("DOMContentLoaded", function () {
+        const reveals = document.querySelectorAll(".reveal");
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add("active");
+            });
+        }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+        reveals.forEach(r => observer.observe(r));
+    });
+
+    // ── Language Tab Switcher ──
+    document.querySelectorAll('.lang-tab').forEach(tab => {
+        tab.addEventListener('click', function () {
+            const group = this.closest('.lang-tabs').dataset.group;
+            const lang = this.dataset.lang;
+
+            // Update tabs
+            document.querySelectorAll(`.lang-tabs[data-group="${group}"] .lang-tab`).forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            // Update panels
+            document.querySelectorAll(`.lang-panel[data-group="${group}"]`).forEach(p => p.classList.remove('active'));
+            document.querySelector(`.lang-panel[data-group="${group}"][data-lang="${lang}"]`).classList.add('active');
+        });
+    });
+
+    // ── Copy Code Helper ──
+    function copyCode(button, codeId) {
+        const code = document.getElementById(codeId);
+        navigator.clipboard.writeText(code.innerText).then(() => {
+            const orig = button.innerHTML;
+            button.innerHTML = "✔️ Đã copy!";
+            button.classList.add("copied");
+            setTimeout(() => { button.innerHTML = orig; button.classList.remove("copied"); }, 2000);
+        });
+    }
+
+    // ══════════════════════════════════════════════
+    // ── Interactive Feedback Loop Animation ──
+    // ══════════════════════════════════════════════
+    const FLOW_STEPS = [
+        {
+            id: 'node-start', cursor: [170, 31],
+            title: 'Bắt Đầu — Chương trình khởi chạy',
+            desc: 'Hệ điều hành nạp file thực thi (.exe / .py) của Controller vào bộ nhớ. Luồng thực thi bắt đầu từ hàm main().',
+            lines: [], color: '#f97316'
+        },
+        {
+            id: 'node-init', cursor: [170, 98],
+            title: 'Khởi Tạo — wb_robot_init()',
+            desc: 'Kết nối Controller với trình mô phỏng Webots qua IPC. Lấy basicTimeStep từ WorldInfo. Khai báo WbDeviceTag cho 8 cảm biến (ps0-ps7) và 2 motor. Bật enable() cho từng cảm biến.',
+            lines: [1, 2, 3], color: '#3b82f6'
+        },
+        {
+            id: 'node-simstep', cursor: [170, 190],
+            title: 'Simulation Step — wb_robot_step()',
+            desc: 'Trình mô phỏng chạy thêm 64ms vật lý. Nếu người dùng nhấn Stop → trả về -1 → thoát vòng lặp. Nếu chưa dừng → trả về 0 → tiếp tục vào vòng lặp (Đúng).',
+            lines: [5], color: '#06b6d4'
+        },
+        {
+            id: 'node-read', cursor: [280, 258],
+            title: 'Read Sensors — Đọc cảm biến',
+            desc: 'Gọi wb_distance_sensor_get_value() cho mỗi cảm biến ps0-ps7. Giá trị 0 = không vật cản, 4096 = vật cản sát robot. Dữ liệu được lưu vào mảng ps_values[8].',
+            lines: [6, 7], color: '#8b5cf6'
+        },
+        {
+            id: 'node-process', cursor: [280, 328],
+            title: 'Process Logic — Xử lý thuật toán',
+            desc: 'So sánh ps_values với ngưỡng 80.0. Nếu ps5/ps6/ps7 > 80 → left_obstacle = true (cản bên trái). Nếu ps0/ps1/ps2 > 80 → right_obstacle = true. Quyết định tốc độ 2 bánh xe.',
+            lines: [9, 10], color: '#f59e0b'
+        },
+        {
+            id: 'node-write', cursor: [280, 398],
+            title: 'Write Motors — Ghi vận tốc motor',
+            desc: 'Gọi wb_motor_set_velocity() cho left_motor và right_motor. Đi thẳng: cả 2 bánh = +3.14 rad/s. Rẽ phải: trái +3.14, phải -3.14. Rẽ trái: trái -3.14, phải +3.14.',
+            lines: [12, 13], color: '#10b981'
+        },
+        // Loop back to simstep (visual only — then step 2 repeats)
+    ];
+
+    const CLEANUP_STEP = {
+        id: 'node-cleanup', cursor: [170, 487],
+        title: 'Kết Thúc — wb_robot_cleanup()',
+        desc: 'Người dùng nhấn Stop → wb_robot_step trả -1 → thoát while. Giải phóng tất cả WbDeviceTag, đóng kết nối IPC, trả return 0.',
+        lines: [14, 15], color: '#ef4444'
+    };
+
+    let flowTimer = null;
+    let flowRunning = false;
+    let flowStepIdx = 0;
+    let flowLoopCount = 0;
+    const MAX_LOOPS = 3;
+
+    function flowHighlight(step) {
+        // Reset all nodes
+        document.querySelectorAll('.flow-node').forEach(n => n.classList.remove('active'));
+        // Reset code lines
+        document.querySelectorAll('.code-line').forEach(l => l.classList.remove('highlight'));
+
+        // Activate node
+        const node = document.getElementById(step.id);
+        if (node) node.classList.add('active');
+
+        // Move cursor
+        const cursor = document.getElementById('flow-cursor');
+        cursor.setAttribute('cx', step.cursor[0]);
+        cursor.setAttribute('cy', step.cursor[1]);
+        cursor.style.opacity = '1';
+
+        // Highlight code lines
+        step.lines.forEach(ln => {
+            const el = document.getElementById('cl-' + ln);
+            if (el) el.classList.add('highlight');
+        });
+
+        // Update info box
+        document.getElementById('step-title').innerHTML = step.title;
+        document.getElementById('step-desc').textContent = step.desc;
+
+        // Update info box border color
+        document.getElementById('step-info').style.borderColor = step.color;
+    }
+
+    function flowAdvance() {
+        if (flowStepIdx < FLOW_STEPS.length) {
+            const step = FLOW_STEPS[flowStepIdx];
+            flowHighlight(step);
+
+            // Update counter
+            const loopDisplay = flowStepIdx <= 1 ? 0 : flowLoopCount + 1;
+            const stepName = step.id.replace('node-', '');
+            document.getElementById('step-counter').innerHTML =
+                'Vòng lặp: <strong>' + loopDisplay + '</strong> / ' + (flowLoopCount >= MAX_LOOPS ? 'Kết thúc' : 'Bước: <strong>' + stepName + '</strong>');
+
+            flowStepIdx++;
+        } else {
+            // End of one loop iteration
+            flowLoopCount++;
+            if (flowLoopCount >= MAX_LOOPS) {
+                // Show cleanup/end step
+                flowHighlight(CLEANUP_STEP);
+                document.getElementById('step-counter').innerHTML =
+                    'Vòng lặp: <strong>' + MAX_LOOPS + '</strong> / Bước: <strong>cleanup (kết thúc)</strong>';
+                flowPause();
+                document.getElementById('btn-start').disabled = true;
+                return;
+            }
+            // Loop back: skip start(0) and init(1), go directly to simstep(2)
+            flowStepIdx = 2;
+            flowAdvance();
+        }
+    }
+
+    function flowStart() {
+        if (flowRunning) return;
+        flowRunning = true;
+        document.getElementById('btn-start').disabled = true;
+        document.getElementById('btn-pause').disabled = false;
+        // Add initial 'active not applied' reset
+        document.querySelectorAll('.flow-node').forEach(n => n.classList.remove('active'));
+        flowTimer = setInterval(flowAdvance, 1800);
+        flowAdvance(); // Immediately show first step
+    }
+
+    function flowPause() {
+        flowRunning = false;
+        clearInterval(flowTimer);
+        document.getElementById('btn-start').disabled = false;
+        document.getElementById('btn-pause').disabled = true;
+    }
+
+    function flowRestart() {
+        flowPause();
+        flowStepIdx = 0;
+        flowLoopCount = 0;
+        // Reset visuals
+        document.querySelectorAll('.flow-node').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.code-line').forEach(l => l.classList.remove('highlight'));
+        document.getElementById('flow-cursor').style.opacity = '0';
+        document.getElementById('step-title').innerHTML = 'Nhấn <strong>Start</strong> để bắt đầu mô phỏng';
+        document.getElementById('step-desc').textContent = 'Sơ đồ bên phải sẽ tự động chạy qua từng bước trong vòng lặp phản hồi của Robot Controller.';
+        document.getElementById('step-info').style.borderColor = 'var(--steam-teal)';
+        document.getElementById('step-counter').innerHTML = 'Vòng lặp: <strong>0</strong> / Bước: <strong>-</strong>';
+        document.getElementById('btn-start').disabled = false;
+    }
+</script>
+</body>
+</html>

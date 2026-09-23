@@ -1,2 +1,13 @@
 ﻿# Ignore oversized video files (>100MB GitHub hard limit)
 Webots Tutorial 3/Giải bài tập cũ.mp4
+
+# Kilo IDE config
+.kilo/
+
+# flyonui-free-landing-page - ignore build artifacts and dependencies
+flyonui-free-landing-page/node_modules/
+flyonui-free-landing-page/pnpm-lock.yaml
+flyonui-free-landing-page/.vscode/
+
+# Word temp files
+~$*

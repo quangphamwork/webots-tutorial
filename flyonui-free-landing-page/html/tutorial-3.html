@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thiết Kế Giao Diện Cùng Webots</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Quicksand:wght@600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --steam-pink:   #e81e62;
+            --steam-orange: #ff9800;
+            --steam-teal:   #00bcd4;
+            --steam-green:  #4caf50;
+            --steam-purple: #673ab7;
+            --steam-blue:   #283593;
+            --steam-violet: #9c27b0;
+
+            --text-main:   #334155;
+            --text-muted:  #64748b;
+            --bg-body:     #f8fafc;
+            --bg-card:     #ffffff;
+            --border-light:#e2e8f0;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            background-color: var(--bg-body);
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 { font-family: 'Quicksand', sans-serif; color: var(--steam-blue); }
+
+        /* ── FLOATING EMOJIS ── */
+        .floating-emojis { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:-1; overflow:hidden; }
+        .emoji { position:absolute; font-size:1.8rem; opacity:0.15; animation:floatUp linear infinite; bottom:-50px; }
+        @keyframes floatUp {
+            0%   { transform:translateY(0) rotate(0deg) scale(0.8); opacity:0; }
+            10%  { opacity:0.3; }
+            90%  { opacity:0.3; }
+            100% { transform:translateY(-110vh) rotate(360deg) scale(1.2); opacity:0; }
+        }
+        .e1{left:8%;  animation-duration:15s; animation-delay:0s;}
+        .e2{left:83%; animation-duration:18s; animation-delay:2s;  font-size:1.4rem;}
+        .e3{left:28%; animation-duration:22s; animation-delay:5s;  font-size:2rem;}
+        .e4{left:67%; animation-duration:16s; animation-delay:1s;}
+        .e5{left:50%; animation-duration:25s; animation-delay:4s;  font-size:1.5rem;}
+        .e6{left:42%; animation-duration:19s; animation-delay:7s;}
+        .e7{left:91%; animation-duration:21s; animation-delay:9s;  font-size:2.2rem;}
+
+        /* ── HEADER ── */
+        header {
+            position:sticky; top:0; z-index:1000;
+            display:flex; align-items:center; justify-content:space-between;
+            padding:0 40px; height:70px;
+            background:rgba(255,255,255,0.85); backdrop-filter:blur(12px);
+            border-bottom:1px solid var(--border-light);
+            box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+        .logo-area img { height:45px; width:auto; object-fit:contain; transition:transform 0.3s ease; }
+        .logo-area img:hover { transform:scale(1.05); }
+        .nav-links { display:flex; gap:35px; height:100%; }
+        .nav-links a {
+            text-decoration:none; color:var(--text-muted); font-weight:600; font-size:0.95rem;
+            display:flex; align-items:center; height:100%; position:relative; transition:color 0.3s;
+        }
+        .nav-links a:hover { color:var(--steam-blue); }
+        .nav-links a::after {
+            content:''; position:absolute; bottom:0; left:0; width:0%; height:3px;
+            background:linear-gradient(90deg, var(--steam-violet), var(--steam-pink));
+            transition:width 0.3s ease; border-radius:3px 3px 0 0;
+        }
+        .nav-links a:hover::after, .nav-links a.active::after { width:100%; }
+        .nav-links a.active { color:var(--steam-blue); }
+        .user-email {
+            color:var(--text-muted); font-size:0.9rem; font-weight:500;
+            background:#f1f5f9; padding:8px 16px; border-radius:20px;
+        }
+
+        /* ── MAIN ── */
+        main { max-width:850px; margin:40px auto; padding:0 20px; }
+
+        .hero-title {
+            text-align:center; font-size:2.5rem; margin-bottom:30px;
+            background:linear-gradient(90deg, var(--steam-violet), var(--steam-pink), var(--steam-orange));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        }
+
+        /* ── CARDS ── */
+        .card {
+            background-color:var(--bg-card); border-radius:16px; padding:30px; margin-bottom:30px;
+            box-shadow:0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025);
+            border:1px solid var(--border-light); transition:transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { transform:translateY(-3px); box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); }
+
+        /* ── SCROLL REVEAL ── */
+        .reveal { opacity:0; transform:translateY(40px); transition:all 0.8s ease-out; }
+        .reveal.active { opacity:1; transform:translateY(0); }
+
+        /* ── CALLOUTS ── */
+        .callout { padding:16px 20px; border-radius:12px; margin:20px 0; display:flex; gap:15px; font-size:0.95rem; }
+        .callout-warning  { background-color:#fffbeb; border-left:5px solid var(--steam-orange); color:#b45309; }
+        .callout-tip      { background-color:#f5f3ff; border-left:5px solid var(--steam-purple); color:#5b21b6; }
+        .callout-info     { background-color:#eff6ff; border-left:5px solid var(--steam-teal);   color:#1e40af; }
+        .callout-error    { background-color:#fef2f2; border-left:5px solid #ef4444;             color:#991b1b; }
+        .callout-success  { background-color:#f0fdf4; border-left:5px solid var(--steam-green);  color:#166534; }
+
+        /* ── PRACTICE BOX ── */
+        .practice-box {
+            background:linear-gradient(135deg, #fdf4ff, #f5f3ff);
+            border:2px solid var(--steam-violet);
+            border-radius:12px; padding:20px 24px; margin:20px 0;
+        }
+        .practice-box .practice-title {
+            font-family:'Quicksand', sans-serif; font-size:1.05rem; font-weight:700;
+            color:var(--steam-violet); margin-bottom:12px;
+            display:flex; align-items:center; gap:8px;
+        }
+
+        /* ── LISTS ── */
+        .step-list { list-style:none; padding:0; }
+        .step-list > li { position:relative; padding-left:40px; margin-bottom:20px; }
+        .step-list > li::before {
+            content:"✓"; position:absolute; left:0; top:2px; width:24px; height:24px;
+            background:var(--steam-green); color:white; border-radius:50%;
+            display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;
+        }
+        .bullet-list { padding-left:20px; margin-bottom:20px; }
+        .bullet-list li { margin-bottom:10px; }
+
+        /* ── IMAGES ── */
+        .content-img {
+            max-width:100%; height:auto; border-radius:8px;
+            box-shadow:0 4px 6px -1px rgba(0,0,0,0.15);
+            margin:20px auto 10px auto; display:block;
+            border:1px solid var(--border-light);
+        }
+        .figure-caption {
+            text-align:center; font-size:0.85rem; color:var(--text-muted);
+            font-style:italic; margin-bottom:25px; display:block;
+        }
+
+        /* ── VIDEO ── */
+        .video-container {
+            width:100%; border-radius:12px; overflow:hidden;
+            margin:20px 0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);
+            border:1px solid var(--border-light); background:#000;
+        }
+        .video-container video { width:100%; display:block; }
+
+        /* ── CONCEPT GRID ── */
+        .concept-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0; }
+        .concept-item { background:#f8fafc; border:1px solid var(--border-light); border-radius:10px; padding:16px; }
+        .concept-item .label { font-weight:600; color:var(--steam-blue); font-size:0.9rem; margin-bottom:6px; }
+        .concept-item p { margin:0; font-size:0.88rem; color:var(--text-muted); }
+
+        /* ── LIGHT TYPE GRID ── */
+        .light-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:20px 0; }
+        .light-card {
+            border-radius:12px; padding:18px; text-align:center;
+            border:1px solid var(--border-light);
+        }
+        .light-card .icon { font-size:2rem; margin-bottom:8px; }
+        .light-card h4 { margin:0 0 6px 0; font-size:0.95rem; }
+        .light-card p { margin:0; font-size:0.82rem; color:var(--text-muted); }
+        .light-card.directional { background:#fffbeb; }
+        .light-card.point       { background:#eff6ff; }
+        .light-card.spot        { background:#fdf4ff; }
+
+        /* ── APPEARANCE DEMO ── */
+        .pbr-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:14px; margin:20px 0; }
+        .pbr-item {
+            border-radius:10px; border:1px solid var(--border-light);
+            padding:14px; background:#f8fafc; text-align:center;
+        }
+        .pbr-item .swatch {
+            width:48px; height:48px; border-radius:50%; margin:0 auto 10px auto;
+            border:2px solid var(--border-light);
+        }
+        .pbr-item .prop { font-family:'Fira Code', monospace; font-size:0.8rem; color:var(--steam-purple); }
+        .pbr-item .desc { font-size:0.82rem; color:var(--text-muted); margin-top:4px; }
+
+        /* ── PREREQ BANNER ── */
+        .prereq-banner {
+            background:linear-gradient(135deg,#fef3c7,#fde68a);
+            border:1px solid #f59e0b; border-radius:12px;
+            padding:16px 20px; margin-bottom:30px;
+            display:flex; align-items:center; gap:12px;
+            font-size:0.95rem; color:#92400e;
+        }
+
+        /* ── CODE WINDOW ── */
+        .code-window {
+            background-color:#1e293b; border-radius:12px; overflow:hidden; margin:20px 0;
+            box-shadow:0 10px 15px -3px rgba(0,0,0,0.2); border:1px solid #334155;
+        }
+        .code-header {
+            background-color:#0f172a; padding:10px 15px;
+            display:flex; align-items:center; justify-content:space-between;
+            border-bottom:1px solid #334155;
+        }
+        .mac-dots { display:flex; gap:8px; }
+        .dot { width:12px; height:12px; border-radius:50%; }
+        .dot.red    { background-color:#ff5f56; }
+        .dot.yellow { background-color:#ffbd2e; }
+        .dot.green  { background-color:#27c93f; }
+        .code-title { color:#94a3b8; font-size:0.85rem; font-family:'Inter',sans-serif; font-weight:500; }
+        .copy-btn {
+            background:rgba(255,255,255,0.1); border:none; color:#cbd5e1;
+            padding:4px 10px; border-radius:6px; font-size:0.8rem;
+            cursor:pointer; transition:background 0.2s, color 0.2s;
+            display:flex; align-items:center; gap:5px; font-family:'Inter',sans-serif;
+        }
+        .copy-btn:hover { background:rgba(255,255,255,0.2); color:#fff; }
+        .copy-btn.copied { background:var(--steam-green); color:white; }
+        .code-window pre {
+            margin:0; padding:20px; overflow-x:auto; background:transparent;
+            font-family:'Fira Code', monospace; font-size:0.88rem; line-height:1.6; color:#f8fafc;
+        }
+        .kw  { color:#c678dd; }
+        .str { color:#98c379; }
+        .num { color:#d19a66; }
+        .cmt { color:#7f848e; font-style:italic; }
+        .key { color:#61afef; }
+
+        /* ── FOOTER ── */
+        .footer-card {
+            background:linear-gradient(135deg, var(--steam-violet), var(--steam-pink));
+            color:white; text-align:center; border-radius:16px; padding:40px 20px; margin-top:50px;
+        }
+        .footer-card h2 { color:white; margin-top:0; }
+        .footer-card p  { color:#e2e8f0; }
+        .tag { display:inline-block; background:rgba(255,255,255,0.2); padding:5px 15px; border-radius:20px; font-size:0.85rem; margin:5px; }
+
+        /* ── PATH BOX ── */
+        .path-box {
+            background:#0f172a; color:#98c379;
+            font-family:'Fira Code', monospace; font-size:0.85rem;
+            padding:12px 16px; border-radius:8px; margin:12px 0;
+            border:1px solid #334155;
+        }
+
+        @media(max-width:600px){
+            .concept-grid, .light-grid, .pbr-grid { grid-template-columns:1fr; }
+            header { padding:0 16px; }
+            .nav-links { gap:14px; }
+            main { padding:0 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="floating-emojis">
+    <div class="emoji e1">🎨</div>
+    <div class="emoji e2">💜</div>
+    <div class="emoji e3">✨</div>
+    <div class="emoji e4">🤖</div>
+    <div class="emoji e5">🌈</div>
+    <div class="emoji e6">💡</div>
+    <div class="emoji e7">🖌️</div>
+</div>
+
+<header>
+    <div class="logo-area">
+        <img src="../Phan 1/logo_steam.png" alt="STEAM for Vietnam Logo">
+    </div>
+    <nav class="nav-links">
+        <a href="#">Scene</a>
+        <a href="#">Proto</a>
+        <a href="#">Animation</a>
+        <a href="#">Simulation</a>
+        <a href="#" class="active">Tutorial</a>
+    </nav>
+    <div class="user-email">Teacher-Suong2026@gmail.com</div>
+</header>
+
+<main>
+    <h1 class="hero-title reveal">Thiết Kế Giao Diện Cùng Webots</h1>
+
+    <div class="prereq-banner reveal">
+        <span style="font-size:1.4rem;">⚠️</span>
+        <div>
+            <strong>Lưu ý quan trọng:</strong> Đảm bảo bạn đã hoàn thành và nắm chắc <strong>cơ chế DEF-USE</strong>
+            cũng như <strong>cấu trúc Solid Node</strong> ở Webots Tutorial 2 trước khi bắt đầu bài học này.
+        </div>
+    </div>
+
+    <!-- HOẠT ĐỘNG LỚP HỌC -->
+    <div class="card reveal">
+        <h2>🎯 Hoạt động lớp học</h2>
+        <p>Trong bài này, chúng ta sẽ biến môi trường mô phỏng từ một khung cảnh đơn giản thành một đấu trường
+        có <strong>đồ họa đẹp mắt</strong>, đồng bộ nhận diện thương hiệu — bằng cách khai thác hệ thống
+        Appearance của Webots.</p>
+        <ul class="step-list">
+            <li>Tìm hiểu Node <code>Appearance</code> và <code>PBRAppearance</code></li>
+            <li>Hiệu chỉnh chất liệu, màu sắc và độ phản xạ ánh sáng (<code>roughness</code>, <code>metalness</code>)</li>
+            <li>Khai thác thư viện kết cấu bề mặt (Texturing) có sẵn của Webots</li>
+            <li>Áp dụng ảnh tùy chỉnh lên vật thể qua <code>ImageTexture</code></li>
+            <li>Bài tập tự lực: Thiết kế đấu trường hoàn chỉnh đồng bộ nhận diện</li>
+        </ul>
+
+        <div class="callout callout-info">
+            <div><strong>📌 Nhắc nhở:</strong> Trước khi bắt đầu bài học, hãy tạo world mới dựa trên kết quả
+            bài cũ bằng cách vào menu <code>File → Save World As…</code></div>
+        </div>
+
+        <div class="video-container">
+            <video controls>
+                <source src="Tạo file mới.mp4" type="video/mp4">
+                Trình duyệt của bạn không hỗ trợ video.
+            </video>
+        </div>
+        <span class="figure-caption">Video: Tạo file world mới từ kết quả Tutorial 2</span>
+    </div>
+
+    <!-- GIẢI BÀI TẬP CŨ -->
+    <div class="card reveal">
+        <h2>📝 Giải Bài Tập Về Nhà — Tutorial 2</h2>
+        <p>Trước khi vào nội dung mới, hãy cùng xem lại lời giải bài tập xây dựng <strong>4 bức tường tĩnh</strong>
+        cho sàn đấu từ Tutorial 2.</p>
+
+        <div class="callout callout-tip">
+            <div>
+                <strong>💡 Thủ thuật hữu ích:</strong>
+                <ul style="margin:8px 0 0 0; padding-left:18px;">
+                    <li>Xoay ngang bức tường bằng cách chọn trục <strong>Z</strong> làm tâm, xoay góc
+                        <strong>90° (π/2 = 1.57 rad)</strong>.</li>
+                    <li>Hai bức tường song song nhau có các thông số vị trí <strong>khác dấu nhau</strong>
+                        (trừ trục Z phải giống nhau).</li>
+                    <li>Chỉ cần định nghĩa <strong>1 Shape DEF WALL_SHAPE</strong>, dùng lại 3 lần bằng USE.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="callout callout-info">
+            <div>
+                <strong>🎬 Video: Lời giải bài tập xây 4 bức tường tĩnh</strong><br>
+                Video này có dung lượng lớn và được lưu trữ cục bộ. Hãy mở file
+                <code>Giải bài tập cũ.mp4</code> trong thư mục dự án để xem.
+            </div>
+        </div>
+
+        <div class="practice-box">
+            <div class="practice-title">🛠️ Bài Thực Hành Số 1 — Khởi động: Tạo quả cầu tím sáng chói</div>
+            <p>Hãy cùng nhau khởi động bài mới bằng cách thêm 1 quả cầu tím sáng chói vào sàn đấu.
+            <em>Bài này không có hướng dẫn vì kiến thức đã được học ở bài cũ — nếu không nhớ, hãy mở lại để xem.</em></p>
+
+            <p><strong>Thông số cần thiết:</strong></p>
+            <ul class="bullet-list">
+                <li><strong>Appearance → baseColor:</strong> <code>1 0 1</code> (màu tím — Magenta)</li>
+                <li><strong>Geometry:</strong> <code>Sphere</code></li>
+                <li>Đặt Shape (2 thông số trên) thành <code>DEF BALL_SHAPE</code></li>
+                <li>Đặt <code>boundingObject</code> là <code>USE BALL_SHAPE</code></li>
+                <li>Đặt trường <code>physics</code> là <code>Physics</code> (để bóng có trọng lực)</li>
+            </ul>
+        </div>
+
+        <div class="video-container">
+            <video controls>
+                <source src="Bài Thực Hành số 1.mp4" type="video/mp4">
+                Trình duyệt của bạn không hỗ trợ video.
+            </video>
+        </div>
+        <span class="figure-caption">Video: Bài Thực Hành Số 1</span>
+    </div>
+
+    <!-- GIỚI THIỆU ÁNH SÁNG -->
+    <div class="card reveal">
+        <h2>💡 Giới Thiệu về Ánh Sáng (Light Nodes)</h2>
+        <p>Ánh sáng của một thế giới mô phỏng được quyết định bởi các <strong>Nodes Đèn (Light nodes)</strong>
+        và <strong>Nền (Background)</strong>. Có ba loại Light nodes chính:</p>
+
+        <div class="light-grid">
+            <div class="light-card directional">
+                <div class="icon">☀️</div>
+                <h4>DirectionalLight</h4>
+                <p>Nguồn sáng ở khoảng cách xa vô tận.<br>Ví dụ: <strong>Mặt Trời</strong>.<br>
+                Hiệu năng cao nhất.</p>
+            </div>
+            <div class="light-card point">
+                <div class="icon">💡</div>
+                <h4>PointLight</h4>
+                <p>Ánh sáng phát ra từ một điểm duy nhất.<br>Ví dụ: <strong>Bóng đèn tròn</strong>.<br>
+                Hiệu năng trung bình.</p>
+            </div>
+            <div class="light-card spot">
+                <div class="icon">🔦</div>
+                <h4>SpotLight</h4>
+                <p>Chùm ánh sáng hình nón.<br>Ví dụ: <strong>Đèn pin, đèn sân khấu</strong>.<br>
+                Hiệu năng thấp nhất.</p>
+            </div>
+        </div>
+
+        <div class="callout callout-warning">
+            <div>
+                <strong>⚠️ Lưu ý hiệu năng:</strong> Các nguồn sáng tiêu tốn khá nhiều tài nguyên phần cứng,
+                đặc biệt khi bật tính năng <strong>đổ bóng (shadow)</strong>. Hãy giảm thiểu số lượng đèn
+                xuống mức tối thiểu để tăng tốc độ mô phỏng.
+                <br><br>
+                Thứ tự hiệu suất: <code>DirectionalLight</code> &gt; <code>PointLight</code> &gt; <code>SpotLight</code>
+            </div>
+        </div>
+
+        <div class="callout callout-info">
+            <div>
+                <strong>📌 Trong bài mô phỏng này:</strong> Node Đèn không hiển thị trực tiếp trên Scene Tree
+                vì nó đã được tích hợp sẵn bên trong PROTO <code>TexturedBackgroundLight</code>. Node này bao gồm
+                một đèn <code>DirectionalLight</code> có cường độ và hướng sáng được tính toán tự động dựa theo
+                ảnh nền của môi trường.
+            </div>
+        </div>
+    </div>
+
+    <!-- APPEARANCE & PBR -->
+    <div class="card reveal">
+        <h2>🎨 Tìm Hiểu Node Appearance &amp; PBRAppearance</h2>
+        <p>Cấu trúc đồ họa của một vật thể được định nghĩa bởi nút <code>Shape</code> nằm bên trong danh sách
+        <code>children</code> của một <code>Solid</code>. Nút <code>Shape</code> bắt buộc phải có hai thành phần:</p>
+
+        <div class="concept-grid">
+            <div class="concept-item">
+                <div class="label">🦴 Geometry</div>
+                <p>Hình khối vật lý — định hình <strong>khung xương</strong> của vật thể.
+                Xác định hình dạng (Sphere, Box, Cylinder...).</p>
+            </div>
+            <div class="concept-item">
+                <div class="label">🎨 Appearance</div>
+                <p>Diện mạo hình ảnh — <strong>đắp da thịt</strong>, màu sắc, chất liệu lên khung xương đó.</p>
+            </div>
+        </div>
+
+        <h3>Phân biệt hai loại Appearance</h3>
+        <div class="concept-grid">
+            <div class="concept-item">
+                <div class="label">Appearance (Classic)</div>
+                <p>Sử dụng mô hình đổ bóng cơ bản (Classic Shading Mode). Đơn giản, ít tùy chỉnh.</p>
+            </div>
+            <div class="concept-item">
+                <div class="label">⭐ PBRAppearance (Khuyến nghị)</div>
+                <p><strong>Physically Based Rendering</strong> — mô phỏng chính xác cách ánh sáng tương tác với
+                bề mặt thực tế (kim loại, nhựa, gỗ, gương...). Đây là lựa chọn tiêu chuẩn trong Webots.</p>
+            </div>
+        </div>
+
+        <h3>Các thuộc tính chính của PBRAppearance</h3>
+        <div class="pbr-grid">
+            <div class="pbr-item">
+                <div class="swatch" style="background:#3b82f6;"></div>
+                <div class="prop">baseColor</div>
+                <div class="desc">Màu nền chính của vật liệu (RGB, 0–1).<br>Ví dụ: <code>[0 0 1]</code> = xanh dương</div>
+            </div>
+            <div class="pbr-item">
+                <div class="swatch" style="background:linear-gradient(135deg,#1e293b 50%,#f8fafc 50%);"></div>
+                <div class="prop">metalness</div>
+                <div class="desc"><code>0</code> = phi kim (nhựa, bê tông)<br><code>1</code> = kim loại bóng loáng</div>
+            </div>
+            <div class="pbr-item">
+                <div class="swatch" style="background:linear-gradient(135deg,#f8fafc 50%,#94a3b8 50%);"></div>
+                <div class="prop">roughness</div>
+                <div class="desc"><code>0</code> = bề mặt gương phẳng<br><code>1</code> = bề mặt nhám hoàn toàn</div>
+            </div>
+            <div class="pbr-item">
+                <div class="swatch" style="background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><pattern id=%22c%22 width=%228%22 height=%228%22 patternUnits=%22userSpaceOnUse%22><rect width=%224%22 height=%224%22 fill=%22%23ccc%22/><rect x=%224%22 y=%224%22 width=%224%22 height=%224%22 fill=%22%23ccc%22/></pattern><rect width=%22100%25%22 height=%22100%25%22 fill=%22url(%23c)%22/></svg>');"></div>
+                <div class="prop">baseColorMap</div>
+                <div class="desc">Ảnh kết cấu (texture) dùng cho màu bề mặt. Nhận node <code>ImageTexture</code>.</div>
+            </div>
+        </div>
+
+        <div class="practice-box">
+            <div class="practice-title">🛠️ Bài Thực Hành Số 2 — Hiệu chỉnh Diện mạo & Đồng bộ Màu sắc Tường</div>
+            <ul class="step-list">
+                <li>
+                    <strong>Bước 1 — Tìm đến PBRAppearance của tường:</strong> Trên Scene Tree, tìm node
+                    <code>Solid</code> của Wall1 (bức tường gốc có nhãn <code>DEF WALL_SHAPE</code>).
+                    Mở rộng: <code>Solid → children → Shape (DEF WALL_SHAPE) → appearance</code>.
+                    Nếu đang là NULL, nhấn Add (+) → <code>Base nodes → PBRAppearance</code>.
+                </li>
+                <li>
+                    <strong>Bước 2 — Chọn màu cho tường:</strong> Mở rộng <code>PBRAppearance</code>,
+                    nhấp chọn trường <code>baseColor</code>. Nhấp đúp để mở <strong>Color Selector</strong>,
+                    hoặc nhập trực tiếp tại Field Editor:<br>
+                    <code style="background:#f1f5f9; padding:2px 6px; border-radius:4px;">baseColor = [0 0 1]</code>
+                    (xanh dương, hoặc màu bạn thích).
+                </li>
+                <li>
+                    <strong>Bước 3 — Loại bỏ kim loại:</strong> Chọn trường <code>metalness</code>,
+                    nhập giá trị <code>0</code> (phi kim — nhựa/bê tông/gỗ).
+                </li>
+                <li>
+                    <strong>Bước 4 — Điều chỉnh độ nhám:</strong> Chọn trường <code>roughness</code>,
+                    đổi thành <code>0.5</code> (độ nhám vừa phải, tán xạ ánh sáng tự nhiên).
+                </li>
+            </ul>
+
+            <div class="callout callout-success" style="margin-top:12px;">
+                <div>
+                    <strong>✅ Kết quả:</strong> Vì ta đang sử dụng cơ chế <strong>DEF-USE</strong>,
+                    khi thay đổi bức tường gốc (<code>DEF WALL_SHAPE</code>), <strong>cả 4 bức tường</strong>
+                    sẽ được cập nhật màu sắc đồng thời!
+                </div>
+            </div>
+        </div>
+
+        <div class="video-container">
+            <video controls>
+                <source src="Bài Thực Hành số 2.mp4" type="video/mp4">
+                Trình duyệt của bạn không hỗ trợ video.
+            </video>
+        </div>
+        <span class="figure-caption">Video: Bài Thực Hành Số 2 — Hiệu chỉnh PBRAppearance cho tường</span>
+
+        <div class="callout callout-tip">
+            <div>
+                <strong>💡 Mở rộng — Dùng Appearance từ thư viện PROTO:</strong> Ngoài cách tự thiết lập,
+                Webots còn cung cấp các giao diện vật liệu có sẵn (gỗ, kim loại, gạch...). Để sử dụng:
+                <ol style="margin:8px 0 0 0; padding-left:18px;">
+                    <li>Delete thuộc tính <code>appearance</code> hiện tại (đặt về NULL)</li>
+                    <li>Chọn <code>appearance → Add → PROTO Nodes (Webots Projects) → appearances → [chọn chất liệu]</code></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEXTURING -->
+    <div class="card reveal">
+        <h2>🖼️ Sử Dụng Kết Cấu Bề Mặt (Texturing)</h2>
+        <p>Thay vì chỉ tô một màu đơn sắc (<code>baseColor</code>), Webots cho phép chúng ta <strong>bọc một tấm
+        ảnh kết cấu (Texture)</strong> lên vật thể để giả lập các bề mặt phức tạp như vân gỗ, gạch lát sàn,
+        hoặc tấm pin năng lượng mặt trời.</p>
+        <p>Trong bài trước, khi tạo sàn <code>Floor (Solid)</code>, hệ thống tự động áp một lớp texture
+        dạng bàn cờ gọi là <code>Parquetry</code>. Bây giờ chúng ta sẽ học cách thay đổi lớp vỏ này.</p>
+
+        <div class="practice-box">
+            <div class="practice-title">🛠️ Bài Thực Hành Số 3 — Thay đổi lớp áo cho Đấu trường</div>
+            <ul class="step-list">
+                <li><strong>Bước 1:</strong> Chọn nút <code>Floor</code> trên Scene Tree. Tìm đến trường
+                    <code>appearance</code> (mặc định đang là <code>Parquetry</code>).</li>
+                <li><strong>Bước 2:</strong> Nhấp chọn trường <code>appearance</code> và nhấn
+                    <strong>Delete</strong>. Lúc này <code>appearance = null</code>.</li>
+                <li><strong>Bước 3:</strong> Nhấn Add → chọn <strong>PROTO Nodes</strong> → chọn
+                    <code>appearance</code> → duyệt qua các kiểu họa tiết. Ví dụ chọn <code>SolarCell</code>
+                    (tấm pin năng lượng mặt trời).</li>
+                <li><strong>Bước 4 — Điều chỉnh mật độ:</strong> Để thay đổi độ thưa/dày của họa tiết trên
+                    sàn, điều chỉnh trường <code>tilesSize</code>.<br>
+                    Ví dụ: đổi từ <code>0.5 0.5</code> → <code>0.1 0.1</code> (họa tiết lặp lại dày hơn).</li>
+            </ul>
+        </div>
+
+        <div class="video-container">
+            <video controls>
+                <source src="Bài Thực Hành số 3.mp4" type="video/mp4">
+                Trình duyệt của bạn không hỗ trợ video.
+            </video>
+        </div>
+        <span class="figure-caption">Video: Bài Thực Hành Số 3 — Thay đổi texture sàn đấu</span>
+
+        <div class="practice-box">
+            <div class="practice-title">🛠️ Bài Thực Hành Số 4 — Thay đổi lớp vỏ quả cầu bằng ảnh tùy thích</div>
+            <p>Bây giờ chúng ta sẽ nạp một tấm ảnh tùy chỉnh từ máy tính lên bề mặt quả cầu thông qua node
+            <code>ImageTexture</code>.</p>
+            <ul class="step-list">
+                <li>
+                    <strong>Bước 1 — Chuẩn bị ảnh:</strong> Lên Google tìm một tấm ảnh mong muốn.
+                    Lưu vào thư mục <code>textures</code> nằm <strong>cùng cấp với file <code>.wbt</code></strong>
+                    (đường dẫn tương đối).
+                    <div class="callout callout-error" style="margin-top:10px;">
+                        <div>
+                            <strong>❌ Định dạng sai:</strong> Tránh tải file <code>.webp</code>. Chỉ dùng
+                            <code>.jpg</code> hoặc <code>.png</code>.
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <strong>Bước 2 — Xóa Appearance cũ:</strong> Trên Scene Tree, tìm node
+                    <code>Solid</code> của quả bóng → mở rộng → chọn trường <code>appearance</code>.
+                    Nếu đang dùng node chất liệu từ PROTO, nhấp chuột phải → <strong>Delete</strong>.
+                    Sau đó nhấn Add (+) → <code>Base nodes → PBRAppearance</code>.
+                </li>
+                <li>
+                    <strong>Bước 3 — Thêm baseColorMap:</strong> Mở rộng <code>PBRAppearance</code>,
+                    tìm trường <code>baseColorMap</code>. Nhấn Add (+) → <code>Base nodes → ImageTexture</code>.
+                </li>
+                <li>
+                    <strong>Bước 4 — Nạp đường dẫn ảnh (url):</strong> Mở rộng node <code>ImageTexture</code>,
+                    tìm trường <code>url</code>. Nhấn <strong>Add</strong> trong Field Editor để tạo mục trống.
+                    Nhấp vào mục đó → chọn nút <strong>Select...</strong> → duyệt đến file ảnh đã chuẩn bị
+                    ở Bước 1 → nhấn <strong>Open</strong>.
+                </li>
+            </ul>
+
+            <div class="callout callout-warning" style="flex-direction:column;">
+                <div>
+                    <strong>⚠️ Lưu ý quan trọng — Đường dẫn tương đối vs Tuyệt đối:</strong>
+                </div>
+                <div style="margin-top:10px;">
+                    <div class="concept-grid" style="margin:0;">
+                        <div class="concept-item" style="border-left:3px solid #ef4444;">
+                            <div class="label" style="color:#991b1b;">❌ Đường dẫn tuyệt đối (SAI)</div>
+                            <div class="path-box">C:\Users\HoangHuy\Desktop\textures\ball.jpg</div>
+                            <p style="color:#991b1b; font-size:0.82rem;">Khi giáo viên mở trên máy khác → quả cầu
+                            màu đen do mất liên kết ảnh!</p>
+                        </div>
+                        <div class="concept-item" style="border-left:3px solid var(--steam-green);">
+                            <div class="label" style="color:#166534;">✅ Đường dẫn tương đối (ĐÚNG)</div>
+                            <div class="path-box">textures/ball.jpg</div>
+                            <p style="color:#166534; font-size:0.82rem;">Gom thư mục dự án (.wbt + textures/)
+                            thành file .zip → giáo viên giải nén và mở đúng ngay!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="video-container">
+            <video controls>
+                <source src="Bài Thực Hành số 4.mp4" type="video/mp4">
+                Trình duyệt của bạn không hỗ trợ video.
+            </video>
+        </div>
+        <span class="figure-caption">Video: Bài Thực Hành Số 4 — Áp ảnh tùy chỉnh lên quả cầu (ImageTexture)</span>
+    </div>
+
+    <!-- RENDERING OPTIONS -->
+    <div class="card reveal">
+        <h2>🖥️ Các Tùy Chọn Hiển Thị (Rendering Options)</h2>
+        <p>Webots cung cấp nhiều chế độ hiển thị đồ họa khác nhau giúp bạn <strong>tối ưu hóa hiệu năng</strong>
+        hoặc <strong>hỗ trợ gỡ lỗi (debug)</strong> khi lập trình robot. Truy cập qua menu
+        <code>View</code> trên thanh công cụ.</p>
+
+        <div class="concept-grid">
+            <div class="concept-item">
+                <div class="label">🔲 Wireframe Rendering</div>
+                <p>Toàn bộ thế giới chuyển sang dạng <strong>lưới tam giác rỗng</strong>. Hữu ích để kiểm tra
+                mật độ đa giác (polygon) và độ phân giải cấu trúc (<code>subdivision</code>) của vật thể.</p>
+            </div>
+            <div class="concept-item">
+                <div class="label">🎨 Plain Rendering</div>
+                <p>Chế độ hiển thị <strong>đầy đủ bình thường</strong> — đổ bóng bề mặt, màu sắc và kết cấu.
+                Dùng để khôi phục giao diện sau khi đã dùng Wireframe.</p>
+            </div>
+        </div>
+
+        <div class="practice-box">
+            <div class="practice-title">🛠️ Bài Thực Hành Số 5 — Thay đổi chế độ hiển thị</div>
+            <ul class="step-list">
+                <li>
+                    <strong>Chuyển sang Wireframe:</strong> Vào <code>View → Wireframe Rendering</code>.
+                    Toàn bộ thế giới sẽ chuyển sang dạng lưới. Quan sát độ phân giải của quả cầu
+                    (<code>subdivision = 2</code> vs giá trị cao hơn).
+                </li>
+                <li>
+                    <strong>Khôi phục về Plain:</strong> Vào <code>View → Plain Rendering</code> để đưa giao
+                    diện trở lại trạng thái bình thường.
+                </li>
+            </ul>
+        </div>
+
+        <div class="video-container">
+            <video controls>
+                <source src="Bài Thực Hành số 5.mp4" type="video/mp4">
+                Trình duyệt của bạn không hỗ trợ video.
+            </video>
+        </div>
+        <span class="figure-caption">Video: Bài Thực Hành Số 5 — Wireframe &amp; Plain Rendering</span>
+    </div>
+
+    <!-- BÀI TẬP VỀ NHÀ -->
+    <div class="card reveal">
+        <h2>🏠 Bài Tập Tự Lực — Thiết Kế Đấu Trường Đồng Bộ Nhận Diện</h2>
+        <p>Đây là bài tập tổng hợp tất cả kiến thức đã học trong 3 bài tutorial. Mục tiêu: xây dựng một
+        <strong>đấu trường hoàn chỉnh, đẹp mắt và nhất quán về màu sắc nhận diện</strong>.</p>
+
+        <div class="callout callout-info">
+            <div>
+                <strong>📋 Yêu cầu tối thiểu:</strong>
+                <ul style="margin:8px 0 0 0; padding-left:18px;">
+                    <li>Sàn đấu 1m × 1m với texture PROTO tùy chọn (không dùng Parquetry mặc định)</li>
+                    <li>4 bức tường tĩnh dùng DEF-USE — cùng màu sắc nhất quán</li>
+                    <li>Ít nhất 2 quả bóng với PBRAppearance khác nhau</li>
+                    <li>1 quả bóng có texture ảnh tùy chỉnh (đường dẫn tương đối)</li>
+                    <li>Robot E-puck đã được đặt controller</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="callout callout-tip">
+            <div>
+                <strong>⭐ Nâng cao (bonus):</strong>
+                <ul style="margin:8px 0 0 0; padding-left:18px;">
+                    <li>Đồng bộ màu sắc tường và sàn theo chủ đề nhất quán (ví dụ: chủ đề vũ trụ, robot factory...)</li>
+                    <li>Thử nghiệm các giá trị <code>roughness</code> và <code>metalness</code> khác nhau để so sánh phản xạ ánh sáng</li>
+                    <li>Nộp bài dưới dạng file <code>.zip</code> chứa cả thư mục <code>textures/</code></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer-card reveal">
+        <h2>🎉 TỔNG KẾT — Tutorial 3</h2>
+        <ul style="text-align:left; max-width:620px; margin:0 auto 20px auto; line-height:1.9;">
+            <li>Hiểu cách ánh sáng hoạt động trong Webots: <strong>DirectionalLight</strong>, <strong>PointLight</strong>, <strong>SpotLight</strong>.</li>
+            <li>Phân biệt và sử dụng <code>Appearance</code> vs <code>PBRAppearance</code> đúng ngữ cảnh.</li>
+            <li>Điều chỉnh <code>baseColor</code>, <code>metalness</code>, <code>roughness</code> để mô phỏng vật liệu thực tế.</li>
+            <li>Áp texture từ thư viện PROTO và từ ảnh tùy chỉnh qua <code>ImageTexture</code>.</li>
+            <li>Sử dụng <strong>đường dẫn tương đối</strong> để đảm bảo dự án di chuyển được giữa các máy.</li>
+            <li>Khai thác chế độ <strong>Wireframe / Plain Rendering</strong> để debug và tối ưu.</li>
+        </ul>
+        <div style="margin-top:30px;">
+            <span class="tag">Team Simulation - Robotics</span>
+            <span class="tag">Liên hệ hỗ trợ: Phạm Hoàng Huy</span>
+            <span class="tag">Email: hoanghuy.pham@steamforvietnam.org</span>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Scroll Reveal
+    document.addEventListener("DOMContentLoaded", function () {
+        const reveals = document.querySelectorAll(".reveal");
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add("active");
+            });
+        }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+        reveals.forEach(r => observer.observe(r));
+    });
+
+    // Copy code helper (dự phòng nếu có code block sau này)
+    function copyCode(button, codeId) {
+        const code = document.getElementById(codeId);
+        navigator.clipboard.writeText(code.innerText).then(() => {
+            const orig = button.innerHTML;
+            button.innerHTML = "✔️ Đã copy!";
+            button.classList.add("copied");
+            setTimeout(() => { button.innerHTML = orig; button.classList.remove("copied"); }, 2000);
+        });
+    }
+</script>
+</body>
+</html>

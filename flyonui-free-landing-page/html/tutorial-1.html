@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="vi" data-theme="light" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bài Mô Phỏng Đầu Tiên Cùng Webots | STEAM for Vietnam</title>
+  <meta name="description" content="Hướng dẫn từng bước: tạo world, thêm robot E-puck và lập trình controller trong Webots." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- FlyonUI compiled CSS -->
+  <link rel="stylesheet" href="assets/css/output.css" />
+
+  <style>
+    /* ── Custom token overrides ── */
+    :root {
+      --color-primary: #1d4ed8;        /* blue-700 */
+      --color-primary-content: #eff6ff;
+    }
+
+    /* Fira Code for inline code / code blocks */
+    code, pre { font-family: 'Fira Code', 'Cascadia Code', monospace; }
+
+    /* Syntax highlight tokens */
+    .kw  { color: #c678dd; }
+    .fn  { color: #61afef; }
+    .str { color: #98c379; }
+    .cmt { color: #7f848e; font-style: italic; }
+    .mac { color: #d19a66; }
+    .num { color: #e5c07b; }
+
+    /* Floating emoji background */
+    .floating-emojis { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+    .emoji-item { position:absolute; font-size:1.6rem; opacity:.12; animation:floatUp linear infinite; bottom:-40px; }
+    @keyframes floatUp {
+      0%   { transform:translateY(0) rotate(0deg); opacity:0; }
+      8%   { opacity:.18; }
+      92%  { opacity:.18; }
+      100% { transform:translateY(-110vh) rotate(360deg); opacity:0; }
+    }
+    .e1{left:7%;  animation-duration:16s; animation-delay:0s;}
+    .e2{left:82%; animation-duration:19s; animation-delay:3s;}
+    .e3{left:30%; animation-duration:23s; animation-delay:6s;}
+    .e4{left:55%; animation-duration:14s; animation-delay:1s;}
+    .e5{left:45%; animation-duration:20s; animation-delay:9s;}
+    .e6{left:70%; animation-duration:17s; animation-delay:4s;}
+    .e7{left:18%; animation-duration:25s; animation-delay:7s;}
+  </style>
+</head>
+
+<body class="bg-base-100 font-[Inter]">
+
+  <!-- Decorative background emojis -->
+  <div class="floating-emojis" aria-hidden="true">
+    <span class="emoji-item e1">🤖</span>
+    <span class="emoji-item e2">💡</span>
+    <span class="emoji-item e3">⚙️</span>
+    <span class="emoji-item e4">🚀</span>
+    <span class="emoji-item e5">✨</span>
+    <span class="emoji-item e6">🌍</span>
+    <span class="emoji-item e7">💻</span>
+  </div>
+
+  <!-- ═══════════════════════════ NAVBAR ═══════════════════════════ -->
+  <header class="border-base-content/15 bg-base-100/90 fixed top-0 z-50 w-full border-b backdrop-blur-md">
+    <nav class="navbar mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+      <div class="w-full lg:flex lg:items-center lg:gap-2">
+
+        <div class="navbar-start items-center justify-between max-lg:w-full">
+          <!-- Logo -->
+          <a href="../index.html" class="flex items-center gap-3">
+            <img src="logo_steam.png" alt="STEAM for Vietnam" class="h-9 w-auto" />
+          </a>
+
+          <!-- Mobile controls -->
+          <div class="flex items-center gap-3 lg:hidden">
+            <a href="../index.html" class="btn btn-primary btn-sm btn-gradient">← Series</a>
+            <button type="button"
+              class="collapse-toggle btn btn-outline btn-secondary btn-square btn-sm"
+              data-collapse="#nav-menu"
+              aria-controls="nav-menu"
+              aria-label="Toggle menu">
+              <span class="icon-[tabler--menu-2] collapse-open:hidden size-5"></span>
+              <span class="icon-[tabler--x] collapse-open:block hidden size-5"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Nav links -->
+        <div id="nav-menu" class="lg:navbar-center transition-height collapse hidden grow overflow-hidden duration-300 lg:flex">
+          <div class="text-base-content flex gap-6 text-sm font-medium max-lg:mt-4 max-lg:flex-col lg:items-center">
+            <a href="#intro"      class="hover:text-primary">Giới thiệu</a>
+            <a href="#world"      class="hover:text-primary">Tạo World</a>
+            <a href="#objects"    class="hover:text-primary">Thả Vật Thể</a>
+            <a href="#robot"      class="hover:text-primary">Thêm Robot</a>
+            <a href="#controller" class="hover:text-primary">Controller</a>
+            <a href="#speed"      class="hover:text-primary">Điều Khiển Tốc Độ</a>
+          </div>
+        </div>
+
+        <div class="navbar-end max-lg:hidden">
+          <a href="../index.html" class="btn btn-outline btn-primary btn-sm">← Về Trang Chủ</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="relative z-10">
+
+    <!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+    <section id="intro" class="pt-20">
+      <div class="from-primary/8 via-base-100 to-base-100 bg-gradient-to-b py-16 sm:py-20 lg:py-28">
+        <div class="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+
+          <div class="bg-base-200 border-base-content/15 mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium">
+            <span class="icon-[tabler--school] text-primary size-4"></span>
+            STEAM for Vietnam · Webots Tutorial Series
+          </div>
+
+          <h1 class="text-base-content mb-6 text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
+            Bài Mô Phỏng
+            <span class="text-primary relative">
+              Đầu Tiên
+              <svg class="absolute -bottom-1 left-0 w-full" viewBox="0 0 300 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 6C50 2 120 1 150 1C180 1 250 2 298 6" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+              </svg>
+            </span>
+            <br />Cùng Webots
+          </h1>
+
+          <p class="text-base-content/70 mx-auto mb-8 max-w-2xl text-lg leading-relaxed">
+            Làm quen giao diện Webots, tạo world mô phỏng đầu tiên, thêm robot E-puck
+            và viết bộ điều khiển bằng ngôn ngữ C — chỉ trong một buổi học.
+          </p>
+
+          <!-- Slide embed -->
+          <div class="border-base-content/10 mx-auto mb-8 overflow-hidden rounded-2xl border shadow-lg" style="aspect-ratio:16/9; max-width:760px;">
+            <iframe
+              src="https://docs.google.com/presentation/d/e/2PACX-1vRFAgjWiCAP6A-dvrvn6kvJbPexLL7ICYUTpDrtdth3b2j8ea915CXXylLE0R08EQ/pubembed?start=false&loop=false&delayms=15000"
+              allowfullscreen class="h-full w-full border-0"></iframe>
+          </div>
+
+          <!-- Quick-glance badges -->
+          <div class="flex flex-wrap justify-center gap-3">
+            <span class="badge badge-primary badge-lg gap-1.5">
+              <span class="icon-[tabler--target] size-4"></span>4 mục tiêu học tập
+            </span>
+            <span class="badge badge-soft badge-success badge-lg gap-1.5">
+              <span class="icon-[tabler--code] size-4"></span>Lập trình C
+            </span>
+            <span class="badge badge-soft badge-warning badge-lg gap-1.5">
+              <span class="icon-[tabler--robot] size-4"></span>Robot E-puck
+            </span>
+            <span class="badge badge-soft badge-info badge-lg gap-1.5">
+              <span class="icon-[tabler--clock] size-4"></span>~90 phút
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ OBJECTIVES ═══════════════════════════ -->
+    <section class="bg-base-200 py-12 sm:py-16 lg:py-20">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+
+        <div class="mb-10 text-center">
+          <h2 class="text-base-content text-2xl font-bold sm:text-3xl">🎯 Hoạt Động Lớp Học</h2>
+          <p class="text-base-content/70 mt-2 text-base">Đối tượng: học sinh sau khóa ROBO001 / sinh viên làm quen mô phỏng robot (cơ bản Python/C++).</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <!-- Obj 1 -->
+          <div class="card card-border hover:border-primary bg-base-100 shadow-none transition-colors duration-200">
+            <div class="card-body items-center gap-3 text-center p-6">
+              <span class="icon-[tabler--layout-dashboard] text-primary size-10"></span>
+              <h3 class="text-base-content font-semibold">Giao diện Webots</h3>
+              <p class="text-base-content/70 text-sm">Làm quen với thao tác chuột, các nút điều khiển và cửa sổ 3D.</p>
+            </div>
+          </div>
+          <!-- Obj 2 -->
+          <div class="card card-border hover:border-primary bg-base-100 shadow-none transition-colors duration-200">
+            <div class="card-body items-center gap-3 text-center p-6">
+              <span class="icon-[tabler--world] text-primary size-10"></span>
+              <h3 class="text-base-content font-semibold">Tạo World mới</h3>
+              <p class="text-base-content/70 text-sm">Tạo thư mục dự án, cấu hình sàn đấu và thêm đối tượng vào scene.</p>
+            </div>
+          </div>
+          <!-- Obj 3 -->
+          <div class="card card-border hover:border-primary bg-base-100 shadow-none transition-colors duration-200">
+            <div class="card-body items-center gap-3 text-center p-6">
+              <span class="icon-[tabler--robot] text-primary size-10"></span>
+              <h3 class="text-base-content font-semibold">Thêm Robot E-puck</h3>
+              <p class="text-base-content/70 text-sm">Chọn robot từ thư viện PROTO và điều chỉnh tham số vật lý.</p>
+            </div>
+          </div>
+          <!-- Obj 4 -->
+          <div class="card card-border hover:border-primary bg-base-100 shadow-none transition-colors duration-200">
+            <div class="card-body items-center gap-3 text-center p-6">
+              <span class="icon-[tabler--code] text-primary size-10"></span>
+              <h3 class="text-base-content font-semibold">Lập trình Controller</h3>
+              <p class="text-base-content/70 text-sm">Viết và biên dịch controller C để robot di chuyển tiến thẳng.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ SECTION I — WORLD ═══════════════════════════ -->
+    <section id="world" class="bg-base-100 py-12 sm:py-16 lg:py-20">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+
+        <!-- Section header -->
+        <div class="mb-10">
+          <span class="text-primary text-sm font-semibold uppercase tracking-widest">Phần I</span>
+          <h2 class="text-base-content mt-1 text-2xl font-bold sm:text-3xl">🌍 Tạo Thế Giới Mô Phỏng</h2>
+        </div>
+
+        <!-- Concept explanation -->
+        <div class="card card-border mb-8 shadow-none">
+          <div class="card-body gap-4">
+            <h3 class="card-title text-lg">Khái niệm về World (thế giới mô phỏng)</h3>
+            <p class="text-base-content/80 text-sm leading-relaxed">
+              <strong>World</strong> là một tệp tin lưu toàn bộ thông tin mô phỏng: vị trí và hình dáng các vật thể,
+              cách chúng tương tác, màu sắc bầu trời, trọng lực, ma sát, khối lượng…
+              Nó xác định trạng thái ban đầu của phiên mô phỏng.
+            </p>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div class="bg-base-200 rounded-box p-4">
+                <p class="text-primary mb-1 text-sm font-semibold">Nodes (Nút)</p>
+                <p class="text-base-content/70 text-sm">Mỗi đối tượng trong thế giới là một Node — robot, hộp, ánh sáng, sàn…</p>
+              </div>
+              <div class="bg-base-200 rounded-box p-4">
+                <p class="text-primary mb-1 text-sm font-semibold">Scene Tree</p>
+                <p class="text-base-content/70 text-sm">Các Node sắp xếp theo cấu trúc cây phân cấp cha–con.</p>
+              </div>
+              <div class="bg-base-200 rounded-box p-4">
+                <p class="text-primary mb-1 text-sm font-semibold">File .wbt</p>
+                <p class="text-base-content/70 text-sm">Lưu dưới dạng văn bản VRML97 — có thể mở bằng VS Code hoặc Notepad++.</p>
+              </div>
+            </div>
+
+            <!-- Warning callout -->
+            <div class="alert alert-warning mt-2">
+              <span class="icon-[tabler--alert-triangle] size-5 shrink-0"></span>
+              <div class="text-sm">
+                <strong>Lưu ý quan trọng:</strong> Không lưu project trong thư mục mặc định của Webots.
+                Khi mở Sample World, luôn dùng <em>Save World As…</em> để tránh làm hỏng file mẫu.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Practice box -->
+        <div class="border-primary bg-primary/5 rounded-box mb-8 border-l-4 p-6">
+          <div class="mb-4 flex items-center gap-2">
+            <span class="badge badge-primary">Bài Thực Hành</span>
+            <h3 class="text-base-content font-semibold">Tạo và kiểm tra World đầu tiên</h3>
+          </div>
+          <ol class="text-base-content/80 space-y-3 text-sm">
+            <li class="flex gap-3">
+              <span class="bg-primary text-primary-content flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">1</span>
+              <span>Mở Webots. Chọn <code class="bg-base-200 rounded px-1.5 py-0.5">File → New → New Project Directory</code>.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="bg-primary text-primary-content flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">2</span>
+              <span>Nhấn <strong>Next</strong>, tạo thư mục mới ở ổ D (hoặc ổ E).</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="bg-primary text-primary-content flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">3</span>
+              <span>Đặt tên project. <strong>Tick hết</strong> vào các ô, đặc biệt ô <em>"Add a rectangle arena"</em>. Nhấn <strong>Finish</strong>.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="bg-primary text-primary-content flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold">4</span>
+              <span>Trong <code class="bg-base-200 rounded px-1.5 py-0.5">Scene Tree</code>, nhấp đúp <code class="bg-base-200 rounded px-1.5 py-0.5">RectangleArena</code>.
+                Đặt <code class="bg-base-200 rounded px-1.5 py-0.5">floorTileSize = 0.25 0.25</code> và <code class="bg-base-200 rounded px-1.5 py-0.5">wallHeight = 0.05</code>.</span>
+            </li>
+          </ol>
+        </div>
+
+        <!-- Images grid -->
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <figure class="card card-border shadow-none">
+            <img src="image6.png" alt="File .wbt mở bằng VS Code" class="w-full rounded-t-xl object-cover" />
+            <figcaption class="text-base-content/60 p-3 text-center text-xs italic">File .wbt có thể chỉnh sửa bằng VS Code như văn bản thông thường</figcaption>
+          </figure>
+          <figure class="card card-border shadow-none">
+            <img src="image8.png" alt="Điều chỉnh floorTileSize" class="w-full rounded-t-xl object-cover" />
+            <figcaption class="text-base-content/60 p-3 text-center text-xs italic">Điều chỉnh kích thước ô gạch sàn (floorTileSize)</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ SECTION II — OBJECTS ═══════════════════════════ -->
+    <section id="objects" class="bg-base-200 py-12 sm:py-16 lg:py-20">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+
+        <div class="mb-10">
+          <span class="text-primary text-sm font-semibold uppercase tracking-widest">Phần II</span>
+          <h2 class="text-base-content mt-1 text-2xl font-bold sm:text-3xl">📦 Thực Hành Thả Vật Thể</h2>
+        </div>
+
+        <!-- Steps -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-5">
+          <div class="lg:col-span-3 space-y-4">
+            <!-- Step cards -->
+            <div class="card card-border bg-base-100 shadow-none">
+              <div class="card-body gap-3 p-5">
+                <div class="flex items-start gap-3">
+                  <span class="badge badge-primary mt-0.5 shrink-0">Bước 1</span>
+                  <div>
+                    <h4 class="text-base-content font-semibold text-sm mb-1">Thêm vật thể WoodenBox</h4>
+                    <p class="text-base-content/70 text-sm">Nhấp đúp <code class="bg-base-200 rounded px-1">RectangleArena</code> → Add (+) →
+                      <code class="bg-base-200 rounded px-1">PROTO nodes / objects / factory / containers / WoodenBox(Solid)</code>.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card card-border bg-base-100 shadow-none">
+              <div class="card-body gap-3 p-5">
+                <div class="flex items-start gap-3">
+                  <span class="badge badge-primary mt-0.5 shrink-0">Bước 2</span>
+                  <div>
+                    <h4 class="text-base-content font-semibold text-sm mb-1">Chỉnh kích thước & vị trí</h4>
+                    <p class="text-base-content/70 text-sm">Đặt <code class="bg-base-200 rounded px-1">size = 0.1 0.1 0.1</code> và
+                      <code class="bg-base-200 rounded px-1">translation = 0 0 0.05</code>.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card card-border bg-base-100 shadow-none">
+              <div class="card-body gap-3 p-5">
+                <div class="flex items-start gap-3">
+                  <span class="badge badge-primary mt-0.5 shrink-0">Bước 3</span>
+                  <div>
+                    <h4 class="text-base-content font-semibold text-sm mb-1">Di chuyển & Sao chép</h4>
+                    <p class="text-base-content/70 text-sm"><kbd class="kbd kbd-sm">Shift</kbd> + <kbd class="kbd kbd-sm">chuột trái</kbd> để kéo.
+                      <kbd class="kbd kbd-sm">Ctrl</kbd>+<kbd class="kbd kbd-sm">C</kbd> / <kbd class="kbd kbd-sm">V</kbd> để nhân bản.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card card-border bg-base-100 shadow-none">
+              <div class="card-body gap-3 p-5">
+                <div class="flex items-start gap-3">
+                  <span class="badge badge-primary mt-0.5 shrink-0">Bước 4</span>
+                  <div>
+                    <h4 class="text-base-content font-semibold text-sm mb-1">Xoay & Lưu</h4>
+                    <p class="text-base-content/70 text-sm">Dùng mũi tên màu xanh để xoay hoặc <kbd class="kbd kbd-sm">Shift</kbd> + <kbd class="kbd kbd-sm">chuột phải</kbd>.
+                      Nhấn <strong>Save</strong> để lưu.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-2">
+            <figure class="card card-border bg-base-100 shadow-none h-full">
+              <img src="image4.png" alt="WoodenBox trong scene" class="w-full rounded-t-xl object-cover" />
+              <figcaption class="text-base-content/60 p-3 text-center text-xs italic">WoodenBox đã được thêm vào không gian mô phỏng</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <!-- Videos -->
+        <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div>
+            <p class="text-base-content/60 mb-2 text-xs font-medium uppercase tracking-wide">Video hướng dẫn — Khởi tạo mô phỏng</p>
+            <div class="card card-border overflow-hidden shadow-none">
+              <video controls class="w-full">
+                <source src="thao tac khoi tao mo phong.mp4" type="video/mp4" />
+              </video>
+            </div>
+          </div>
+          <div>
+            <p class="text-base-content/60 mb-2 text-xs font-medium uppercase tracking-wide">Video hướng dẫn — Tạo Controller</p>
+            <div class="card card-border overflow-hidden shadow-none">
+              <video controls class="w-full">
+                <source src="thao tac tao controller.mp4" type="video/mp4" />
+              </video>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ SECTION III — ROBOT ═══════════════════════════ -->
+    <section id="robot" class="bg-base-100 py-12 sm:py-16 lg:py-20">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+
+        <div class="mb-10">
+          <span class="text-primary text-sm font-semibold uppercase tracking-widest">Phần III</span>
+          <h2 class="text-base-content mt-1 text-2xl font-bold sm:text-3xl">🤖 Thêm Robot E-puck</h2>
+        </div>
+
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <div class="space-y-5">
+            <p class="text-base-content/80 text-sm leading-relaxed">
+              <strong>E-puck</strong> là robot bánh xe vi sai nhỏ gọn sở hữu 10 đèn LED,
+              8 cảm biến khoảng cách và một camera — lý tưởng cho thực hành mô phỏng.
+            </p>
+
+            <!-- Warning: time rule -->
+            <div class="alert alert-warning text-sm">
+              <span class="icon-[tabler--clock] size-5 shrink-0"></span>
+              <div>
+                <strong>Quy tắc thời gian:</strong> Luôn <em>Pause → Reset → Modify → Save</em>.
+                Đảm bảo đồng hồ hiển thị <code class="bg-warning/20 rounded px-1">0:00:00:000</code> trước khi chỉnh sửa.
+              </div>
+            </div>
+
+            <!-- Add steps -->
+            <div class="border-primary bg-primary/5 rounded-box border-l-4 p-5 space-y-3">
+              <h3 class="text-base-content font-semibold text-sm">Thêm robot vào scene</h3>
+              <p class="text-base-content/70 text-sm">
+                Chọn node <code class="bg-base-200 rounded px-1">WoodenBox</code> cuối cùng → Add (+) →
+                <code class="bg-base-200 rounded px-1">PROTO nodes / robots / gctronic / e-puck / E-puck (Robot)</code>.
+                Điều chỉnh vị trí và nhấn <strong>Run</strong> — robot sẽ tự tránh chướng ngại vật!
+              </p>
+            </div>
+
+            <!-- Tip: any robot -->
+            <div class="alert alert-info text-sm">
+              <span class="icon-[tabler--bulb] size-5 shrink-0"></span>
+              <span>Bạn có thể thêm bất kỳ robot nào trong <code>Nodes → robots</code> nhé!</span>
+            </div>
+
+            <!-- Physical interaction -->
+            <div class="card card-border bg-base-100 shadow-none">
+              <div class="card-body gap-2 p-5">
+                <h4 class="card-title text-sm">Tác dụng lực vật lý</h4>
+                <div class="overflow-x-auto">
+                  <table class="table table-sm">
+                    <thead><tr><th>OS</th><th>Phím tắt</th></tr></thead>
+                    <tbody>
+                      <tr><td>Windows / Linux</td><td><kbd class="kbd kbd-sm">Alt</kbd> + <kbd class="kbd kbd-sm">chuột trái</kbd> + kéo</td></tr>
+                      <tr><td>macOS</td><td><kbd class="kbd kbd-sm">Option ⌥</kbd> + <kbd class="kbd kbd-sm">chuột trái</kbd> + kéo</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <figure class="card card-border shadow-none">
+              <img src="image3.jpg" alt="Robot E-puck trong sân" class="w-full rounded-t-xl object-cover" />
+              <figcaption class="text-base-content/60 p-3 text-center text-xs italic">Robot E-puck đã được đưa vào sân đấu</figcaption>
+            </figure>
+            <figure class="card card-border shadow-none">
+              <img src="image7.png" alt="Thêm robot khác" class="w-full rounded-t-xl object-cover" />
+              <figcaption class="text-base-content/60 p-3 text-center text-xs italic">Thư viện robot có sẵn trong Webots</figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <!-- basicTimeStep tip -->
+        <div class="alert alert-info mt-8 text-sm">
+          <span class="icon-[tabler--adjustments] size-5 shrink-0"></span>
+          <div>
+            <strong>Tăng độ chính xác mô phỏng:</strong> Pause → Revert → mở node
+            <code class="bg-base-200 rounded px-1">WorldInfo</code> → đặt
+            <code class="bg-base-200 rounded px-1">basicTimeStep = 16</code> (ms) → Save.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ SECTION IV — CONTROLLER ═══════════════════════════ -->
+    <section id="controller" class="bg-base-200 py-12 sm:py-16 lg:py-20">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+
+        <div class="mb-10">
+          <span class="text-primary text-sm font-semibold uppercase tracking-widest">Phần IV</span>
+          <h2 class="text-base-content mt-1 text-2xl font-bold sm:text-3xl">💻 Tạo Bộ Điều Khiển (Controller)</h2>
+        </div>
+
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-5">
+
+          <div class="lg:col-span-2 space-y-5">
+            <p class="text-base-content/80 text-sm leading-relaxed">
+              <strong>Controller</strong> là chương trình xác định hành vi của robot.
+              C / C++ / Java cần <em>biên dịch (compile)</em>; Python / MATLAB là ngôn ngữ thông dịch.
+            </p>
+            <ul class="text-base-content/70 space-y-2 text-sm">
+              <li class="flex gap-2"><span class="icon-[tabler--circle-check] text-success size-4 mt-0.5 shrink-0"></span>Một controller có thể dùng cho nhiều robot cùng lúc.</li>
+              <li class="flex gap-2"><span class="icon-[tabler--circle-check] text-success size-4 mt-0.5 shrink-0"></span>Mỗi controller chạy trong một tiến trình độc lập với file <code>.wbt</code>.</li>
+            </ul>
+
+            <div class="border-primary bg-primary/5 rounded-box border-l-4 p-5 space-y-3 text-sm">
+              <h3 class="text-base-content font-semibold">Tạo và liên kết Controller</h3>
+              <ol class="text-base-content/70 space-y-2">
+                <li class="flex gap-2"><span class="font-bold text-primary">1.</span>
+                  Vào <code class="bg-base-200 rounded px-1">File / New / New Robot Controller…</code> → chọn C → đặt tên <code class="bg-base-200 rounded px-1">epuck_go_forward</code>.</li>
+                <li class="flex gap-2"><span class="font-bold text-primary">2.</span>
+                  Chỉnh sửa mã nguồn trực tiếp trong Text Editor của Webots.</li>
+                <li class="flex gap-2"><span class="font-bold text-primary">3.</span>
+                  Mở Node <code class="bg-base-200 rounded px-1">E-puck</code> → trường <code class="bg-base-200 rounded px-1">controller</code> → <strong>Select…</strong> → chọn <code class="bg-base-200 rounded px-1">epuck_go_forward</code>.</li>
+              </ol>
+            </div>
+
+            <figure class="card card-border bg-base-100 shadow-none">
+              <img src="image9.png" alt="Text Editor Webots" class="w-full rounded-t-xl object-cover" />
+              <figcaption class="text-base-content/60 p-3 text-center text-xs italic">Trình soạn thảo mã nguồn mặc định của Webots</figcaption>
+            </figure>
+          </div>
+
+          <!-- Code window -->
+          <div class="lg:col-span-3">
+            <p class="text-base-content/60 mb-3 text-xs font-medium uppercase tracking-wide">Robot tiến thẳng — epuck_go_forward.c</p>
+            <div class="overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-lg">
+              <!-- Mac dots header -->
+              <div class="flex items-center justify-between border-b border-slate-700 bg-slate-950 px-4 py-2.5">
+                <div class="flex gap-1.5">
+                  <div class="h-3 w-3 rounded-full bg-red-500"></div>
+                  <div class="h-3 w-3 rounded-full bg-yellow-400"></div>
+                  <div class="h-3 w-3 rounded-full bg-green-500"></div>
+                </div>
+                <span class="text-slate-400 text-xs">epuck_go_forward.c</span>
+                <button onclick="copyCode(this,'code1')" class="text-slate-400 hover:text-white rounded px-2 py-0.5 text-xs transition-colors hover:bg-white/10">
+                  📋 Copy
+                </button>
+              </div>
+              <pre class="overflow-x-auto p-5 text-sm leading-relaxed text-slate-100"><code id="code1"><span class="mac">#include</span> &lt;webots/robot.h&gt;
+<span class="mac">#include</span> &lt;webots/motor.h&gt;
+
+<span class="mac">#define</span> TIME_STEP <span class="num">64</span>
+
+<span class="kw">int</span> <span class="fn">main</span>(<span class="kw">int</span> argc, <span class="kw">char</span> **argv) {
+  <span class="fn">wb_robot_init</span>();
+
+  WbDeviceTag left_motor  = <span class="fn">wb_robot_get_device</span>(<span class="str">"left wheel motor"</span>);
+  WbDeviceTag right_motor = <span class="fn">wb_robot_get_device</span>(<span class="str">"right wheel motor"</span>);
+
+  <span class="fn">wb_motor_set_position</span>(left_motor,  <span class="num">10.0</span>);
+  <span class="fn">wb_motor_set_position</span>(right_motor, <span class="num">10.0</span>);
+
+  <span class="kw">while</span> (<span class="fn">wb_robot_step</span>(TIME_STEP) != -<span class="num">1</span>) { }
+
+  <span class="fn">wb_robot_cleanup</span>();
+  <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+            </div>
+
+            <div class="alert alert-success mt-4 text-sm">
+              <span class="icon-[tabler--player-play] size-5 shrink-0"></span>
+              <span><strong>Thực thi:</strong> Lưu mã nguồn → <strong>Build</strong> → <strong>Reset</strong> → chạy mô phỏng.
+              File nhị phân sẽ có tên <code class="bg-success/20 rounded px-1">epuck_go_forward.exe</code> trong thư mục controller.</span>
+            </div>
+
+            <figure class="card card-border bg-base-100 shadow-none mt-4">
+              <img src="image5.png" alt="Đổi Controller" class="w-full rounded-t-xl object-cover" style="max-height:200px; object-fit:contain; background:#f8fafc;" />
+              <figcaption class="text-base-content/60 p-3 text-center text-xs italic">Đổi controller qua trường <code>controller</code> của node E-puck</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ SECTION V — SPEED CONTROL ═══════════════════════════ -->
+    <section id="speed" class="bg-base-100 py-12 sm:py-16 lg:py-20">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+
+        <div class="mb-10">
+          <span class="text-primary text-sm font-semibold uppercase tracking-widest">Phần V</span>
+          <h2 class="text-base-content mt-1 text-2xl font-bold sm:text-3xl">🚀 Điều Khiển Tốc Độ Bánh Xe</h2>
+        </div>
+
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <div>
+            <p class="text-base-content/80 mb-6 text-sm leading-relaxed">
+              Để điều khiển robot bằng <strong>vận tốc</strong> thay vì vị trí góc quay,
+              đặt mục tiêu vị trí là <code class="bg-base-200 rounded px-1">INFINITY</code> rồi gọi
+              <code class="bg-base-200 rounded px-1">wb_motor_set_velocity()</code>.
+            </p>
+
+            <div class="overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-lg">
+              <div class="flex items-center justify-between border-b border-slate-700 bg-slate-950 px-4 py-2.5">
+                <div class="flex gap-1.5">
+                  <div class="h-3 w-3 rounded-full bg-red-500"></div>
+                  <div class="h-3 w-3 rounded-full bg-yellow-400"></div>
+                  <div class="h-3 w-3 rounded-full bg-green-500"></div>
+                </div>
+                <span class="text-slate-400 text-xs">epuck_speed_control.c</span>
+                <button onclick="copyCode(this,'code2')" class="text-slate-400 hover:text-white rounded px-2 py-0.5 text-xs transition-colors hover:bg-white/10">
+                  📋 Copy
+                </button>
+              </div>
+              <pre class="overflow-x-auto p-5 text-sm leading-relaxed text-slate-100"><code id="code2"><span class="mac">#include</span> &lt;webots/robot.h&gt;
+<span class="mac">#include</span> &lt;webots/motor.h&gt;
+
+<span class="mac">#define</span> TIME_STEP <span class="num">64</span>
+<span class="mac">#define</span> MAX_SPEED <span class="num">6.28</span>
+
+<span class="kw">int</span> <span class="fn">main</span>(<span class="kw">int</span> argc, <span class="kw">char</span> **argv) {
+  <span class="fn">wb_robot_init</span>();
+
+  WbDeviceTag left_motor  = <span class="fn">wb_robot_get_device</span>(<span class="str">"left wheel motor"</span>);
+  WbDeviceTag right_motor = <span class="fn">wb_robot_get_device</span>(<span class="str">"right wheel motor"</span>);
+
+  <span class="cmt">// Bật chế độ speed control (vị trí → vô cực)</span>
+  <span class="fn">wb_motor_set_position</span>(left_motor,  INFINITY);
+  <span class="fn">wb_motor_set_position</span>(right_motor, INFINITY);
+
+  <span class="fn">wb_motor_set_velocity</span>(left_motor,  <span class="num">0.1</span> * MAX_SPEED);
+  <span class="fn">wb_motor_set_velocity</span>(right_motor, <span class="num">0.1</span> * MAX_SPEED);
+
+  <span class="kw">while</span> (<span class="fn">wb_robot_step</span>(TIME_STEP) != -<span class="num">1</span>) { }
+
+  <span class="fn">wb_robot_cleanup</span>();
+  <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+            </div>
+          </div>
+
+          <div class="space-y-5">
+            <!-- Images -->
+            <figure class="card card-border shadow-none">
+              <img src="image10.png" alt="Tìm WoodenBox node" class="w-full rounded-t-xl object-cover" />
+              <figcaption class="text-base-content/60 p-3 text-center text-xs italic">Tìm và thêm node WoodenBox từ thư viện PROTO</figcaption>
+            </figure>
+
+            <!-- Key concepts -->
+            <div class="card card-border bg-base-100 shadow-none">
+              <div class="card-body gap-3 p-5">
+                <h4 class="card-title text-sm">Tóm tắt điều khiển motor</h4>
+                <div class="overflow-x-auto">
+                  <table class="table table-sm text-xs">
+                    <thead>
+                      <tr><th>Chế độ</th><th>Hàm API</th><th>Khi dùng</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="font-medium">Position</td>
+                        <td><code>set_position(angle)</code></td>
+                        <td>Quay đúng góc nhất định</td>
+                      </tr>
+                      <tr>
+                        <td class="font-medium">Velocity</td>
+                        <td><code>set_position(∞)</code><br/><code>set_velocity(v)</code></td>
+                        <td>Di chuyển liên tục</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════ SUMMARY / CTA ═══════════════════════════ -->
+    <section class="bg-base-200 py-12 sm:py-16 lg:py-20">
+      <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+
+        <!-- Gradient CTA card -->
+        <div class="from-primary/25 to-primary/5 rounded-3xl bg-gradient-to-br p-0.5">
+          <div class="bg-base-100 rounded-3xl p-8 lg:p-12">
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center">
+              <div>
+                <h2 class="text-base-content mb-4 text-2xl font-bold sm:text-3xl">🎉 Tổng kết Tutorial 1</h2>
+                <ul class="text-base-content/80 space-y-3 text-sm">
+                  <li class="flex gap-2"><span class="icon-[tabler--circle-check-filled] text-success size-5 shrink-0 mt-0.5"></span>World là file <code>.wbt</code> lưu toàn bộ scene dưới dạng cây node.</li>
+                  <li class="flex gap-2"><span class="icon-[tabler--circle-check-filled] text-success size-5 shrink-0 mt-0.5"></span>Controller C / C++ / Java phải được biên dịch trước khi chạy.</li>
+                  <li class="flex gap-2"><span class="icon-[tabler--circle-check-filled] text-success size-5 shrink-0 mt-0.5"></span>Controller được liên kết qua trường <code>controller</code> của node Robot.</li>
+                  <li class="flex gap-2"><span class="icon-[tabler--circle-check-filled] text-success size-5 shrink-0 mt-0.5"></span>Dùng <code>set_position(INFINITY)</code> + <code>set_velocity(v)</code> để điều khiển tốc độ.</li>
+                </ul>
+              </div>
+              <div class="flex flex-col items-center gap-4 text-center">
+                <p class="text-base-content/70 text-sm">Tiếp tục với Tutorial 2 để tìm hiểu<br /><strong>Solid Node &amp; cơ chế DEF-USE</strong>.</p>
+                <div class="flex flex-wrap justify-center gap-3">
+                  <a href="../Webots Tutorial 2/Phần 2 Chỉnh sửa môi trường mô phỏng.html"
+                     class="btn btn-primary btn-gradient">
+                    Tutorial 2 →
+                    <span class="icon-[tabler--arrow-right] size-4"></span>
+                  </a>
+                  <a href="../index.html" class="btn btn-outline btn-primary">
+                    <span class="icon-[tabler--home] size-4"></span>
+                    Trang chủ
+                  </a>
+                </div>
+                <div class="divider text-xs">Team Simulation</div>
+                <p class="text-base-content/50 text-xs">
+                  Liên hệ hỗ trợ: <a href="mailto:hoanghuy.pham@steamforvietnam.org" class="link link-primary">hoanghuy.pham@steamforvietnam.org</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+  <footer class="border-base-content/10 bg-base-100 border-t py-8">
+    <div class="mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
+      <div class="flex flex-wrap items-center justify-center gap-6 text-sm">
+        <img src="logo_steam.png" alt="STEAM for Vietnam" class="h-7 w-auto opacity-70" />
+        <span class="text-base-content/50">© 2026 STEAM for Vietnam — Team Simulation · Robotics</span>
+        <a href="../index.html" class="link link-primary text-sm">← Webots Tutorial Series</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- FlyonUI JS (collapse, navbar, etc.) -->
+  <script src="assets/libs/flyonui/flyonui.js"></script>
+  <!-- Tailwind Intersect (scroll animations) -->
+  <script src="assets/libs/tailwindcss-intersect/dist/observer.min.js"></script>
+
+  <script>
+    // Copy code button
+    function copyCode(btn, id) {
+      const el = document.getElementById(id);
+      navigator.clipboard.writeText(el.innerText).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = '✔️ Copied!';
+        btn.classList.add('text-green-400');
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove('text-green-400'); }, 2000);
+      });
+    }
+
+    // Active nav link highlight on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('nav a[href^="#"]');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(l => l.classList.remove('text-primary', 'font-bold'));
+          const active = document.querySelector(`nav a[href="#${e.target.id}"]`);
+          if (active) active.classList.add('text-primary', 'font-bold');
+        }
+      });
+    }, { threshold: 0.4 });
+    sections.forEach(s => observer.observe(s));
+  </script>
+</body>
+</html>
