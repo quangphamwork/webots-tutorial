@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webots Tutorial - STEAM for Vietnam</title>
+    <title>Robotics Simulation Tutorial - STEAM for Vietnam</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
@@ -68,8 +68,43 @@
             text-align: center;
             color: var(--text-muted);
             font-size: 1.05rem;
-            margin-bottom: 50px;
+            margin-bottom: 20px;
         }
+        /* Download banner */
+        .download-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+            border: 1px solid var(--steam-teal);
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+        .download-banner p {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: white;
+            background: linear-gradient(90deg, var(--steam-blue), var(--steam-teal));
+            transition: opacity 0.2s, transform 0.15s;
+            white-space: nowrap;
+        }
+        .btn-download:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn-download svg { width: 18px; height: 18px; fill: white; }
+
         .cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -88,11 +123,11 @@
             flex-direction: column;
         }
         .card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-        .card-banner {
-            height: 8px;
-        }
+        .card-banner { height: 8px; }
         .card-banner.t1 { background: linear-gradient(90deg, var(--steam-pink), var(--steam-orange)); }
         .card-banner.t2 { background: linear-gradient(90deg, var(--steam-teal), var(--steam-blue)); }
+        .card-banner.t3 { background: linear-gradient(90deg, #673ab7, #e81e62); }
+        .card-banner.t4 { background: linear-gradient(90deg, #f59e0b, #22c55e); }
         .card-body { padding: 24px; flex: 1; }
         .card-badge {
             display: inline-block;
@@ -104,6 +139,8 @@
         }
         .badge-t1 { background: #fce7f3; color: #be185d; }
         .badge-t2 { background: #e0f7fa; color: #0e7490; }
+        .badge-t3 { background: #fdf4ff; color: #7e22ce; }
+        .badge-t4 { background: #fefce8; color: #a16207; }
         .card-body h2 {
             font-family: 'Quicksand', sans-serif;
             color: var(--steam-blue);
@@ -144,11 +181,7 @@
         .btn:hover { opacity: 0.85; }
         .btn-t1 { background: linear-gradient(90deg, var(--steam-pink), var(--steam-orange)); color: white; }
         .btn-t2 { background: linear-gradient(90deg, var(--steam-teal), var(--steam-blue)); color: white; }
-        .card-banner.t3 { background: linear-gradient(90deg, #673ab7, #e81e62); }
-        .badge-t3 { background: #fdf4ff; color: #7e22ce; }
         .btn-t3 { background: linear-gradient(90deg, #673ab7, #e81e62); color: white; }
-        .card-banner.t4 { background: linear-gradient(90deg, #f59e0b, #22c55e); }
-        .badge-t4 { background: #fefce8; color: #a16207; }
         .btn-t4 { background: linear-gradient(90deg, #f59e0b, #22c55e); color: white; }
         footer {
             text-align: center;
@@ -167,16 +200,24 @@
     </header>
 
     <main>
-        <h1>Webots Tutorial Series</h1>
-        <p class="subtitle">Tài liệu hướng dẫn mô phỏng robot Webots — STEAM for Vietnam</p>
+        <h1>Robotics Simulation Tutorial Series</h1>
+        <p class="subtitle">Tài liệu hướng dẫn mô phỏng robot Robotics Simulation — STEAM for Vietnam</p>
+
+        <div class="download-banner">
+            <p><strong>Bắt đầu ngay:</strong> Tải phần mềm Robotics Simulation để thực hành theo các bài học.</p>
+            <a class="btn-download" href="https://drive.google.com/file/d/1n0wAIRPy7Qj6j12bidEwNIWLm5ERUFMJ/view?usp=sharing" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                Tải phần mềm
+            </a>
+        </div>
 
         <div class="cards">
             <a class="card" href="Phan 1/Phần 1 Khởi tạo môi trường mô phỏng và robot.html">
                 <div class="card-banner t1"></div>
                 <div class="card-body">
                     <span class="card-badge badge-t1">Tutorial 1</span>
-                    <h2>Bài Mô Phỏng Đầu Tiên Cùng Webots</h2>
-                    <p>Làm quen giao diện Webots, tạo world đầu tiên và lập trình controller cơ bản bằng C.</p>
+                    <h2>Bài Mô Phỏng Đầu Tiên Cùng Robotics Simulation</h2>
+                    <p>Làm quen giao diện Robotics Simulation, tạo world đầu tiên và lập trình controller cơ bản bằng C.</p>
                     <ul class="card-topics">
                         <li>Tạo thế giới mới (World)</li>
                         <li>Thả vật thể vào môi trường</li>
@@ -185,14 +226,14 @@
                         <li>Điều khiển tốc độ bánh xe</li>
                     </ul>
                     <span class="btn btn-t1">Bắt đầu Tutorial 1 →</span>
-        </div>
+                </div>
             </a>
 
             <a class="card" href="Webots Tutorial 2/Phần 2 Chỉnh sửa môi trường mô phỏng.html">
                 <div class="card-banner t2"></div>
                 <div class="card-body">
                     <span class="card-badge badge-t2">Tutorial 2</span>
-                    <h2>Chỉnh Sửa Môi Trường Cùng Webots</h2>
+                    <h2>Chỉnh Sửa Môi Trường Cùng Robotics Simulation</h2>
                     <p>Tìm hiểu Solid Node, cơ chế DEF-USE và xây dựng môi trường mô phỏng phức tạp hơn.</p>
                     <ul class="card-topics">
                         <li>Chỉnh sửa sàn đấu (Floor)</li>
@@ -209,7 +250,7 @@
                 <div class="card-banner t3"></div>
                 <div class="card-body">
                     <span class="card-badge badge-t3">Tutorial 3</span>
-                    <h2>Thiết Kế Giao Diện Cùng Webots</h2>
+                    <h2>Thiết Kế Giao Diện Cùng Robotics Simulation</h2>
                     <p>Khai thác hệ thống Appearance, PBRAppearance và Texturing để thiết kế đấu trường đồ họa đẹp mắt.</p>
                     <ul class="card-topics">
                         <li>Ánh sáng: DirectionalLight, PointLight, SpotLight</li>
@@ -226,11 +267,11 @@
                 <div class="card-banner t4"></div>
                 <div class="card-body">
                     <span class="card-badge badge-t4">Tutorial 4</span>
-                    <h2>Lập Trình Robot Controller Cùng Webots</h2>
+                    <h2>Lập Trình Robot Controller Cùng Robotics Simulation</h2>
                     <p>Làm chủ lập trình bộ điều khiển cho robot — từ cảm biến đến thuật toán né chướng ngại vật.</p>
                     <ul class="card-topics">
                         <li>Mô hình robot E-puck &amp; cảm biến</li>
-                        <li>Webots Controller API (C/C++/Python/Java)</li>
+                        <li>Robotics Simulation Controller API (C/C++/Python/Java)</li>
                         <li>Feedback Loop — vòng lặp phản hồi</li>
                         <li>Khởi tạo DistanceSensor &amp; Motor</li>
                         <li>Thuật toán Collision Avoidance</li>
